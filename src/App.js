@@ -1,26 +1,26 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { ThemeProvider } from "@material-ui/core/styles";
+// Local
+import theme from "./theme";
+import SignIn from "./pages/SignIn";
+import Landing from "./pages/Landing";
+import AdminOT from "./pages/AdminOT";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.PureComponent {
+  render() {
+    return (
+      <BrowserRouter>
+        <ThemeProvider theme={theme}>
+          <Switch>
+            <Route path="/" exact component={SignIn} />
+            <Route path="/landing" exact component={Landing} />
+            <Route path="/admin" exact component={AdminOT} />
+          </Switch>
+        </ThemeProvider>
+      </BrowserRouter>
+    );
+  }
 }
 
 export default App;

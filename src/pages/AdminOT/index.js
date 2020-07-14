@@ -94,6 +94,23 @@ class AdminOT extends React.Component {
                 departments: ['Dept A', 'Dept B'],
                 modules: []
             },
+        ],
+        departmentsTableData: [
+            {
+                name: 'Dept A',
+                zone: 'Zone 1',
+                head: 'Abhishek'
+            },
+            {
+                name: 'Dept B',
+                zone: 'Zone 1',
+                head: 'Darshan'
+            },
+            {
+                name: 'Dept C',
+                zone: 'Zone 3',
+                head: 'Srikanth'
+            }
         ]
     }
 
@@ -150,6 +167,7 @@ class AdminOT extends React.Component {
                     options={{
                         grouping: true,
                         exportButton: true,
+                        actionsColumnIndex: -1,
                     }}
                     columns={[
                         { title: "Name", field: "name" },
@@ -157,6 +175,7 @@ class AdminOT extends React.Component {
                         {
                             title: "Cases",
                             field: "cases",
+                            editable: "never",
                             grouping: false,
                             render: rowData =>
                                 <div>
@@ -174,6 +193,7 @@ class AdminOT extends React.Component {
                         {
                             title: "Deparments",
                             field: "departments",
+                            editable: "never",
                             grouping: false,
                             render: rowData =>
                                 <div>
@@ -191,6 +211,7 @@ class AdminOT extends React.Component {
                         {
                             title: "Modules",
                             field: "modules",
+                            editable: "never",
                             grouping: false,
                             render: rowData =>
                                 <div>
@@ -229,9 +250,41 @@ class AdminOT extends React.Component {
     }
 
     getDepartmentsTable() {
+        const {
+            classes
+        } = this.props;
+
         return (
             <div>
-
+                <MaterialTable
+                    icons={tableIcons}
+                    options={{
+                        grouping: true,
+                        exportButton: true,
+                        actionsColumnIndex: -1,
+                    }}
+                    columns={[
+                        { title: "Name", field: "name" },
+                        { title: "Zone", field: "zone" },
+                        { title: "Head", field: "head" }
+                    ]}
+                    data={this.state.departmentsTableData}
+                    title=''
+                    editable={{
+                        onRowAdd: (newData) => new Promise(resolve => {
+                            console.log(newData);
+                            resolve();
+                        }),
+                        onRowUpdate: (newData, oldData) => new Promise(resolve => {
+                            console.log(newData);
+                            resolve();
+                        }),
+                        onRowDelete: (oldData) => new Promise(resolve => {
+                            console.log(oldData);
+                            resolve();
+                        }),
+                    }}
+                />
             </div>
         );
     }

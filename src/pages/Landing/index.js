@@ -98,16 +98,16 @@ class Landing extends React.Component {
                     </Grid>
 
                     <Grid item md={4}>
-                        {this.getCard('Case OT', 'View, Add or Delete cases', null)}
+                        {this.getCard('Case OT', 'View, Add or Delete cases', () => window.location='/case')}
 
                     </Grid>
 
                     <Grid item md={4}>
-                        {this.getCard('Check OT', 'Description for Check OT', null)}
+                        {this.getCard('Check OT', 'Description for Check OT', () => window.location='/check')}
                     </Grid>
 
                     <Grid item md={4}>
-                        {this.getCard('Fencing OT', 'Description for Fencing OT', null)}
+                        {this.getCard('Fencing OT', 'Description for Fencing OT', () => window.location='/fence')}
                     </Grid>
 
                     <Grid item md={4}>

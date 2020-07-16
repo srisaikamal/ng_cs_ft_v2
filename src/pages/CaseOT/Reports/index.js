@@ -80,6 +80,7 @@ class Reports extends React.Component {
     state = {
         drawerOpen: false,
         editMode: false,
+        drawerPosition: 'left',
         editableItem: {
             name: '',
             designation: '',
@@ -127,63 +128,12 @@ class Reports extends React.Component {
         return (
             <div>
                 {this.getDrawer()}
-                <MaterialTable
-                    icons={tableIcons}
-                    options={{
-                        grouping: true,
-                        exportButton: true,
-                        actionsColumnIndex: -1,
-                    }}
-                    columns={[
-                        { title: "Name", field: "name" },
-                        { title: "Designation", field: "designation" },
-                        {
-                            title: "Cases",
-                            field: "cases",
-                            grouping: false,
-                            render: rowData =>
-                                <div>
-                                    {
-                                        rowData.cases.map((caseName, index) =>
-                                            <Chip
-                                                key={index}
-                                                label={caseName}
-                                                className={classes.chip}
-                                            />
-                                        )
-                                    }
-                                </div>
-                        },
-                        { title: "Department", field: "department" },
-                        {
-                            title: "Modules",
-                            field: "modules",
-                            grouping: false,
-                            render: rowData =>
-                                <div>
-                                    {
-                                        rowData.modules.map((moduleName, index) =>
-                                            <Chip
-                                                key={index}
-                                                label={moduleName}
-                                                className={classes.chip}
-                                                onDelete={() => null}
-                                            />
-                                        )
-                                    }
-                                </div>
-                        }
-                    ]}
-                    data={this.state.tableData}
-                    title=''
-                    actions={[
-                        {
-                            icon: () => <AddBox />,
-                            tooltip: 'Add User',
-                            isFreeAction: true,
-                            onClick: () => {
-                                // Do add operation
-                                this.setState({
+                <Grid container>
+                    <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
+                        <span
+                            style={{ fontSize: 42, }}
+                            onClick={
+                                () => this.setState({
                                     drawerOpen: true,
                                     editableItem: {
                                         name: '',
@@ -193,20 +143,106 @@ class Reports extends React.Component {
                                         modules: [],
                                     },
                                     editMode: false,
-                                });
-                            }
-                        },
-                        {
-                            icon: () => <Edit />,
-                            tooltip: 'Edit User',
-                            onClick: (event, rowData) => {
-                                // Do edit operation
-                                this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
-                            }
-                        }
-                    ]}
-                />
-            </div>
+                                    drawerPosition: 'left',
+                                })}
+                        >
+                            C<br />
+                            R<br />
+                            E<br />
+                            A<br />
+                            T<br />
+                            E<br />
+                        </span>
+                    </Grid>
+                    <Grid item md={10}>
+                        <MaterialTable
+                            icons={tableIcons}
+                            options={{
+                                grouping: true,
+                                exportButton: true,
+                                actionsColumnIndex: -1,
+                            }}
+                            columns={[
+                                { title: "Name", field: "name" },
+                                { title: "Designation", field: "designation" },
+                                {
+                                    title: "Cases",
+                                    field: "cases",
+                                    grouping: false,
+                                    render: rowData =>
+                                        <div>
+                                            {
+                                                rowData.cases.map((caseName, index) =>
+                                                    <Chip
+                                                        key={index}
+                                                        label={caseName}
+                                                        className={classes.chip}
+                                                    />
+                                                )
+                                            }
+                                        </div>
+                                },
+                                { title: "Department", field: "department" },
+                                {
+                                    title: "Modules",
+                                    field: "modules",
+                                    grouping: false,
+                                    render: rowData =>
+                                        <div>
+                                            {
+                                                rowData.modules.map((moduleName, index) =>
+                                                    <Chip
+                                                        key={index}
+                                                        label={moduleName}
+                                                        className={classes.chip}
+                                                        onDelete={() => null}
+                                                    />
+                                                )
+                                            }
+                                        </div>
+                                }
+                            ]}
+                            data={this.state.tableData}
+                            title=''
+                            actions={[
+                                {
+                                    icon: () => <Edit />,
+                                    tooltip: 'Edit User',
+                                    onClick: (event, rowData) => {
+                                        // Do edit operation
+                                        this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
+                                    }
+                                }
+                            ]}
+                        />
+                    </Grid>
+                    <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
+                        <span
+                            style={{ fontSize: 42, }}
+                            onClick={
+                                () => this.setState({
+                                    drawerOpen: true,
+                                    editableItem: {
+                                        name: '',
+                                        designation: '',
+                                        cases: [],
+                                        department: '',
+                                        modules: [],
+                                    },
+                                    editMode: false,
+                                    drawerPosition: 'right',
+                                })}
+                        >
+                            C<br />
+                            R<br />
+                            E<br />
+                            A<br />
+                            T<br />
+                            E<br />
+                        </span>
+                    </Grid>
+                </Grid>
+            </div >
         );
     }
 
@@ -217,6 +253,7 @@ class Reports extends React.Component {
 
         return (
             <Drawer
+                anchor={this.state.drawerPosition}
                 className={classes.drawer}
                 classes={{
                     paper: classes.drawerPaper,

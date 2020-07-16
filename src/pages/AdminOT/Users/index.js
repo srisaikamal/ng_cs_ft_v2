@@ -206,25 +206,6 @@ class Users extends React.Component {
                             title=''
                             actions={[
                                 {
-                                    icon: () => <AddBox />,
-                                    tooltip: 'Add User',
-                                    isFreeAction: true,
-                                    onClick: () => {
-                                        // Do add operation
-                                        this.setState({
-                                            drawerOpen: true,
-                                            editableItem: {
-                                                name: '',
-                                                designation: '',
-                                                cases: [],
-                                                department: '',
-                                                modules: [],
-                                            },
-                                            editMode: false,
-                                        });
-                                    }
-                                },
-                                {
                                     icon: () => <Edit />,
                                     tooltip: 'Edit User',
                                     onClick: (event, rowData) => {

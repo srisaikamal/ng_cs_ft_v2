@@ -80,13 +80,14 @@ class Departments extends React.Component {
 
     state = {
         drawerOpen: false,
+        drawerPosition: 'left',
         editMode: false,
         editableItem: {
             name: '',
             zone: '',
             head: '',
         },
-        departmentsTableData: [
+        tableData: [
             {
                 name: 'Dept A',
                 zone: 'Zone A',
@@ -113,28 +114,12 @@ class Departments extends React.Component {
         return (
             <div>
                 {this.getDrawer()}
-                <MaterialTable
-                    icons={tableIcons}
-                    options={{
-                        grouping: true,
-                        exportButton: true,
-                        actionsColumnIndex: -1,
-                    }}
-                    columns={[
-                        { title: "Name", field: "name" },
-                        { title: "Zone", field: "zone" },
-                        { title: "Head", field: "head" }
-                    ]}
-                    data={this.state.departmentsTableData}
-                    title=''
-                    actions={[
-                        {
-                            icon: () => <AddBox />,
-                            tooltip: 'Add Department',
-                            isFreeAction: true,
-                            onClick: () => {
-                                // Do add operation
-                                this.setState({
+                <Grid container>
+                    <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
+                        <span
+                            style={{ fontSize: 42, }}
+                            onClick={
+                                () => this.setState({
                                     drawerOpen: true,
                                     editableItem: {
                                         name: '',
@@ -142,19 +127,70 @@ class Departments extends React.Component {
                                         head: '',
                                     },
                                     editMode: false,
-                                });
-                            }
-                        },
-                        {
-                            icon: () => <Edit />,
-                            tooltip: 'Edit Department',
-                            onClick: (event, rowData) => {
-                                // Do edit operation
-                                this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
-                            }
-                        }
-                    ]}
-                />
+                                    drawerPosition: 'left',
+                                })}
+                        >
+                            C<br />
+                            R<br />
+                            E<br />
+                            A<br />
+                            T<br />
+                            E<br />
+                        </span>
+                    </Grid>
+                    <Grid item md={10}>
+                        <MaterialTable
+                            icons={tableIcons}
+                            options={{
+                                grouping: true,
+                                exportButton: true,
+                                actionsColumnIndex: -1,
+                            }}
+                            columns={[
+                                { title: "Name", field: "name" },
+                                { title: "Zone", field: "zone" },
+                                { title: "Head", field: "head" },
+                            ]}
+                            data={this.state.tableData}
+                            title=''
+                            actions={[
+                                {
+                                    icon: () => <Edit />,
+                                    tooltip: 'Edit Department',
+                                    onClick: (event, rowData) => {
+                                        // Do edit operation
+                                        this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
+                                    }
+                                }
+                            ]}
+                        />
+                    </Grid>
+                    <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
+                        <span
+                            style={{ fontSize: 42, }}
+                            onClick={
+                                () => this.setState({
+                                    drawerOpen: true,
+                                    editableItem: {
+                                        name: '',
+                                        designation: '',
+                                        cases: [],
+                                        department: '',
+                                        modules: [],
+                                    },
+                                    editMode: false,
+                                    drawerPosition: 'right',
+                                })}
+                        >
+                            C<br />
+                            R<br />
+                            E<br />
+                            A<br />
+                            T<br />
+                            E<br />
+                        </span>
+                    </Grid>
+                </Grid>
             </div>
         );
     }
@@ -166,6 +202,7 @@ class Departments extends React.Component {
 
         return (
             <Drawer
+                anchor={this.state.drawerPosition}
                 className={classes.drawer}
                 classes={{
                     paper: classes.drawerPaper,

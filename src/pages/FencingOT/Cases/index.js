@@ -128,40 +128,16 @@ class Cases extends React.Component {
 
     render() {
         const {
-            classes
+            classes,
+            selectedCase,
+            onRowSelect,
         } = this.props;
 
         return (
             <div>
                 {this.getDrawer()}
                 <Grid container>
-                    <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
-                        <span
-                            style={{ fontSize: 42, }}
-                            onClick={
-                                () => this.setState({
-                                    drawerOpen: true,
-                                    editableItem: {
-                                        name: '',
-                                        description: '',
-                                        category: '',
-                                        status: 'Open',
-                                        createdAt: '',
-                                        updatedAt: '',
-                                        users: [],
-                                    },
-                                    editMode: false,
-                                })}
-                        >
-                            C<br />
-                            R<br />
-                            E<br />
-                            A<br />
-                            T<br />
-                            E<br />
-                        </span>
-                    </Grid>
-                    <Grid item md={11}>
+                    <Grid item md={12}>
                         <MaterialTable
                             icons={tableIcons}
                             components={{
@@ -170,8 +146,10 @@ class Cases extends React.Component {
                             options={{
                                 grouping: true,
                                 exportButton: true,
-                                actionsColumnIndex: -1,
                                 paging: false,
+                                rowStyle: rowData => ({
+                                    backgroundColor: (selectedCase.id === rowData.id) ? '#EEE' : '#FFF'
+                                })
                             }}
                             columns={[
                                 { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
@@ -206,23 +184,7 @@ class Cases extends React.Component {
                             ]}
                             data={this.state.tableData}
                             title='Case List'
-                            actions={[
-                                {
-                                    icon: () => <Edit />,
-                                    tooltip: 'Edit Case',
-                                    onClick: (event, rowData) => {
-                                        // Do edit operation
-                                        this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
-                                    },
-                                },
-                                {
-                                    icon: () => <Delete color='error' />,
-                                    tooltip: 'Delete Case',
-                                    onClick: (event, rowData) => {
-                                        // Do Delete operation
-                                    },
-                                }
-                            ]}
+                            onRowClick={onRowSelect}
                         />
                     </Grid>
                 </Grid>

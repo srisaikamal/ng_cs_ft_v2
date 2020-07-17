@@ -9,7 +9,8 @@ import {
     Select,
     TextField,
     Typography,
-    withStyles
+    withStyles,
+    Paper,
 } from '@material-ui/core';
 import {
     Add,
@@ -80,7 +81,6 @@ class Departments extends React.Component {
 
     state = {
         drawerOpen: false,
-        drawerPosition: 'left',
         editMode: false,
         editableItem: {
             name: '',
@@ -127,7 +127,6 @@ class Departments extends React.Component {
                                         head: '',
                                     },
                                     editMode: false,
-                                    drawerPosition: 'left',
                                 })}
                         >
                             C<br />
@@ -138,13 +137,17 @@ class Departments extends React.Component {
                             E<br />
                         </span>
                     </Grid>
-                    <Grid item md={10}>
+                    <Grid item md={11}>
                         <MaterialTable
                             icons={tableIcons}
+                            components={{
+                                Container: props => <Paper {...props} elevation={0} />
+                            }}
                             options={{
                                 grouping: true,
                                 exportButton: true,
                                 actionsColumnIndex: -1,
+                                paging: false,
                             }}
                             columns={[
                                 { title: "Name", field: "name" },
@@ -152,7 +155,7 @@ class Departments extends React.Component {
                                 { title: "Head", field: "head" },
                             ]}
                             data={this.state.tableData}
-                            title=''
+                            title='Departments List'
                             actions={[
                                 {
                                     icon: () => <Edit />,
@@ -161,34 +164,16 @@ class Departments extends React.Component {
                                         // Do edit operation
                                         this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
                                     }
+                                },
+                                {
+                                    icon: () => <Delete color='error' />,
+                                    tooltip: 'Delete Department',
+                                    onClick: (event, rowData) => {
+                                        // Do Delete operation
+                                    },
                                 }
                             ]}
                         />
-                    </Grid>
-                    <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
-                        <span
-                            style={{ fontSize: 42, }}
-                            onClick={
-                                () => this.setState({
-                                    drawerOpen: true,
-                                    editableItem: {
-                                        name: '',
-                                        designation: '',
-                                        cases: [],
-                                        department: '',
-                                        modules: [],
-                                    },
-                                    editMode: false,
-                                    drawerPosition: 'right',
-                                })}
-                        >
-                            C<br />
-                            R<br />
-                            E<br />
-                            A<br />
-                            T<br />
-                            E<br />
-                        </span>
                     </Grid>
                 </Grid>
             </div>
@@ -202,7 +187,6 @@ class Departments extends React.Component {
 
         return (
             <Drawer
-                anchor={this.state.drawerPosition}
                 className={classes.drawer}
                 classes={{
                     paper: classes.drawerPaper,
@@ -255,40 +239,16 @@ class Departments extends React.Component {
                     </Select>
                 </FormControl>
 
-                <Grid container spacing={1} style={{ marginTop: 24 }}>
-                    <Grid item md={6}>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            fullWidth
-                            startIcon={<Delete />}
-                            onClick={
-                                () => this.setState({
-                                    drawerOpen: false,
-                                    editMode: false,
-                                    editableItem: {
-                                        name: '',
-                                        zone: '',
-                                        head: '',
-                                    },
-                                })
-                            }
-                        >
-                            {this.state.editMode ? 'Delete' : 'Cancel'}
-                        </Button>
-                    </Grid>
 
-                    <Grid item md={6}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            startIcon={this.state.editMode ? <Edit /> : <Add />}
-                        >
-                            {this.state.editMode ? 'Edit' : 'Create'}
-                        </Button>
-                    </Grid>
-                </Grid>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    style={{ marginTop: 32 }}
+                    startIcon={this.state.editMode ? <Edit /> : <Add />}
+                >
+                    {this.state.editMode ? 'Edit' : 'Create'}
+                </Button>
             </Drawer>
         );
     }

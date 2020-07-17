@@ -1,53 +1,10 @@
+import { Tab, Tabs, withStyles } from '@material-ui/core';
+import { ExitToApp, Home } from '@material-ui/icons';
 import React from 'react';
-import { forwardRef } from 'react';
-import {
-    withStyles,
-    Tabs,
-    Tab,
-    Chip,
-} from '@material-ui/core';
-import {
-    Home,
-    ExitToApp,
-    AddBox,
-    Clear,
-    DeleteOutline,
-    ChevronLeft,
-    ChevronRight,
-    Edit,
-    Remove,
-    ViewColumn,
-    SaveAlt,
-    FilterList,
-    ArrowDownward,
-    Check,
-    FirstPage,
-    LastPage,
-    Search,
-} from '@material-ui/icons';
-import MaterialTable from "material-table";
 // Local
 import CustomAppBar from '../../components/CustomAppBar';
-
-const tableIcons = {
-    Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
-    Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
-    Clear: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-    Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
-    DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
-    Export: forwardRef((props, ref) => <SaveAlt {...props} ref={ref} />),
-    Filter: forwardRef((props, ref) => <FilterList {...props} ref={ref} />),
-    FirstPage: forwardRef((props, ref) => <FirstPage {...props} ref={ref} />),
-    LastPage: forwardRef((props, ref) => <LastPage {...props} ref={ref} />),
-    NextPage: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    PreviousPage: forwardRef((props, ref) => <ChevronLeft {...props} ref={ref} />),
-    ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-    Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
-    SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
-    ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-    ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
-};
+import Jobs from './Jobs';
+import Reports from './Reports';
 
 const styles = (theme) => ({
     chip: {
@@ -59,59 +16,28 @@ class CheckOT extends React.Component {
     constructor(props) {
         super(props);
         this.getHeader = this.getHeader.bind(this);
-        this.getUsersTable = this.getUsersTable.bind(this);
-        this.getDepartmentsTable = this.getDepartmentsTable.bind(this);
+        this.getContent = this.getContent.bind(this);
     }
 
     state = {
-        activeTab: 'Check',
-        usersTableData: [
-            {
-                name: 'Darshan',
-                designation: 'Analyst',
-                cases: ['Bomb blast at market', 'Case 2', 'Case 3'],
-                departments: ['Dept A', 'Dept B', 'Dept C'],
-                modules: ['Location']
-            },
-            {
-                name: 'Abhishek',
-                designation: 'Supervisor',
-                cases: ['Bomb blast at market', 'Case 2'],
-                departments: ['Dept C'],
-                modules: ['Location']
-            },
-            {
-                name: 'Boopathi',
-                designation: 'Analyst',
-                cases: ['Case 2', 'Case 3'],
-                departments: ['Dept A', 'Dept B', 'Dept C'],
-                modules: []
-            },
-            {
-                name: 'Srikanth',
-                designation: 'Analyst',
-                cases: ['Bomb blast at market', 'Case 3'],
-                departments: ['Dept A', 'Dept B'],
-                modules: []
-            },
-        ],
-        departmentsTableData: [
-            {
-                name: 'Dept A',
-                zone: 'Zone 1',
-                head: 'Abhishek'
-            },
-            {
-                name: 'Dept B',
-                zone: 'Zone 1',
-                head: 'Darshan'
-            },
-            {
-                name: 'Dept C',
-                zone: 'Zone 3',
-                head: 'Srikanth'
-            }
-        ]
+        activeTab: 'Jobs',
+        selectedCase: {
+            id: 0,
+            name: 'Default',
+            description: 'Default Case for all Check OT jobs',
+            category: 'Other',
+            status: 'Open',
+            users: [],
+        },
+        selectedJob: {
+            id: -1,
+            case: 0,
+            serverJobId: -1,
+            status: '',
+            category: '',
+            eventStartDate: '',
+            eventEndDate: '',
+        }
     }
 
     render() {
@@ -119,13 +45,17 @@ class CheckOT extends React.Component {
             <div>
                 {this.getHeader()}
                 {
-                    //this.getContent()
+                    this.getContent()
                 }
             </div>
         );
     }
 
     getHeader() {
+        let jobsTabTitle = 'Jobs';
+        if (this.state.selectedJob.id !== -1) jobsTabTitle += ` <${this.state.selectedJob.category}>`;
+
+
         return (
             <div>
                 <CustomAppBar
@@ -142,155 +72,26 @@ class CheckOT extends React.Component {
                     value={this.state.activeTab}
                     onChange={(event, newVal) => this.setState({ activeTab: newVal })}
                 >
-                    <Tab label={<b style={{ color: 'white' }}>Check</b>} value='Check' />
-                    <Tab label={<b style={{ color: 'white' }}>Schedule</b>} value='Schedule' />
-                    <Tab label={<b style={{ color: 'white' }}>History</b>} value='History' />
-                    <Tab label={<b style={{ color: 'white' }}>Tracking Reports</b>} value='Tracking-Reports' />
+                    <Tab label={<b style={{ color: 'white' }}>{jobsTabTitle}</b>} value='Jobs' />
+                    {this.state.selectedJob.id !== -1 ? <Tab label={<b style={{ color: 'white' }}>Reports</b>} value='Reports' /> : <div />}
                 </Tabs>
             </div>
         );
     }
 
     getContent() {
-        return (
-            <div>
-                {this.state.activeTab === 'Users' ? this.getUsersTable() : this.getDepartmentsTable()}
-            </div>
-        );
-    }
-
-    getUsersTable() {
-        const {
-            classes
-        } = this.props;
-
-        return (
-            <div>
-                <MaterialTable
-                    icons={tableIcons}
-                    options={{
-                        grouping: true,
-                        exportButton: true,
-                        actionsColumnIndex: -1,
-                    }}
-                    columns={[
-                        { title: "Name", field: "name" },
-                        { title: "Designation", field: "designation" },
-                        {
-                            title: "Cases",
-                            field: "cases",
-                            editable: "never",
-                            grouping: false,
-                            render: rowData =>
-                                <div>
-                                    {
-                                        rowData.cases.map((caseName, index) =>
-                                            <Chip
-                                                key={index}
-                                                label={caseName}
-                                                className={classes.chip}
-                                            />
-                                        )
-                                    }
-                                </div>
-                        },
-                        {
-                            title: "Deparments",
-                            field: "departments",
-                            editable: "never",
-                            grouping: false,
-                            render: rowData =>
-                                <div>
-                                    {
-                                        rowData.departments.map((departmentName, index) =>
-                                            <Chip
-                                                key={index}
-                                                label={departmentName}
-                                                className={classes.chip}
-                                            />
-                                        )
-                                    }
-                                </div>
-                        },
-                        {
-                            title: "Modules",
-                            field: "modules",
-                            editable: "never",
-                            grouping: false,
-                            render: rowData =>
-                                <div>
-                                    {
-                                        rowData.modules.map((moduleName, index) =>
-                                            <Chip
-                                                key={index}
-                                                label={moduleName}
-                                                className={classes.chip}
-                                                onDelete={() => null}
-                                            />
-                                        )
-                                    }
-                                </div>
-                        }
-                    ]}
-                    data={this.state.usersTableData}
-                    title=''
-                    editable={{
-                        onRowAdd: (newData) => new Promise(resolve => {
-                            console.log(newData);
-                            resolve();
-                        }),
-                        onRowUpdate: (newData, oldData) => new Promise(resolve => {
-                            console.log(newData);
-                            resolve();
-                        }),
-                        onRowDelete: (oldData) => new Promise(resolve => {
-                            console.log(oldData);
-                            resolve();
-                        }),
-                    }}
-                />
-            </div>
-        );
-    }
-
-    getDepartmentsTable() {
-        const {
-            classes
-        } = this.props;
-
-        return (
-            <div>
-                <MaterialTable
-                    icons={tableIcons}
-                    options={{
-                        grouping: true,
-                        exportButton: true,
-                        actionsColumnIndex: -1,
-                    }}
-                    columns={[
-                        { title: "Name", field: "name" },
-                        { title: "Zone", field: "zone" },
-                        { title: "Head", field: "head" }
-                    ]}
-                    data={this.state.departmentsTableData}
-                    title=''
-                    editable={{
-                        onRowAdd: (newData) => new Promise(resolve => {
-                            console.log(newData);
-                            resolve();
-                        }),
-                        onRowUpdate: (newData, oldData) => new Promise(resolve => {
-                            console.log(newData);
-                            resolve();
-                        }),
-                        onRowDelete: (oldData) => new Promise(resolve => {
-                            console.log(oldData);
-                            resolve();
-                        }),
-                    }}
-                />
-            </div>
-        );
+        switch (this.state.activeTab) {
+            case 'Jobs':
+                return <Jobs
+                    selectedCase={this.state.selectedCase}
+                    selectedJob={this.state.selectedJob}
+                    onRowSelect={(event, selectedRow) => this.setState({ selectedJob: selectedRow })}
+                />;
+            default:
+                return <Reports
+                    selectedCase={this.state.selectedCase}
+                />;
+        }
     }
 };
 

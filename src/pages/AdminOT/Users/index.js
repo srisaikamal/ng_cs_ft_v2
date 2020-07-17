@@ -8,7 +8,8 @@ import {
     Select,
     TextField,
     Typography,
-    withStyles
+    withStyles,
+    Paper,
 } from '@material-ui/core';
 import {
     Add,
@@ -80,13 +81,11 @@ class Users extends React.Component {
     state = {
         drawerOpen: false,
         editMode: false,
-        drawerPosition: 'left',
         editableItem: {
             name: '',
             designation: '',
             cases: [],
             department: '',
-            modules: [],
         },
         tableData: [
             {
@@ -94,28 +93,24 @@ class Users extends React.Component {
                 designation: 'Analyst',
                 cases: ['Bomb blast at market', 'Case 2', 'Case 3'],
                 department: 'Dept A',
-                modules: ['Location']
             },
             {
                 name: 'Abhishek',
                 designation: 'Supervisor',
                 cases: ['Bomb blast at market', 'Case 2'],
                 department: 'Dept C',
-                modules: ['Location']
             },
             {
                 name: 'Boopathi',
                 designation: 'Analyst',
                 cases: ['Case 2', 'Case 3'],
                 department: 'Dept B',
-                modules: []
             },
             {
                 name: 'Srikanth',
                 designation: 'Analyst',
                 cases: ['Bomb blast at market', 'Case 3'],
                 department: 'Dept A',
-                modules: []
             },
         ]
     }
@@ -143,7 +138,6 @@ class Users extends React.Component {
                                         modules: [],
                                     },
                                     editMode: false,
-                                    drawerPosition: 'left',
                                 })}
                         >
                             C<br />
@@ -154,13 +148,17 @@ class Users extends React.Component {
                             E<br />
                         </span>
                     </Grid>
-                    <Grid item md={10}>
+                    <Grid item md={11}>
                         <MaterialTable
                             icons={tableIcons}
+                            components={{
+                                Container: props => <Paper {...props} elevation={0} />
+                            }}
                             options={{
                                 grouping: true,
                                 exportButton: true,
                                 actionsColumnIndex: -1,
+                                paging: false,
                             }}
                             columns={[
                                 { title: "Name", field: "name" },
@@ -183,27 +181,9 @@ class Users extends React.Component {
                                         </div>
                                 },
                                 { title: "Department", field: "department" },
-                                {
-                                    title: "Modules",
-                                    field: "modules",
-                                    grouping: false,
-                                    render: rowData =>
-                                        <div>
-                                            {
-                                                rowData.modules.map((moduleName, index) =>
-                                                    <Chip
-                                                        key={index}
-                                                        label={moduleName}
-                                                        className={classes.chip}
-                                                        onDelete={() => null}
-                                                    />
-                                                )
-                                            }
-                                        </div>
-                                }
                             ]}
                             data={this.state.tableData}
-                            title=''
+                            title='Users List'
                             actions={[
                                 {
                                     icon: () => <Edit />,
@@ -212,34 +192,16 @@ class Users extends React.Component {
                                         // Do edit operation
                                         this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
                                     }
+                                },
+                                {
+                                    icon: () => <Delete color='error' />,
+                                    tooltip: 'Delete User',
+                                    onClick: (event, rowData) => {
+                                        // Do Delete operation
+                                    },
                                 }
                             ]}
                         />
-                    </Grid>
-                    <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
-                        <span
-                            style={{ fontSize: 42, }}
-                            onClick={
-                                () => this.setState({
-                                    drawerOpen: true,
-                                    editableItem: {
-                                        name: '',
-                                        designation: '',
-                                        cases: [],
-                                        department: '',
-                                        modules: [],
-                                    },
-                                    editMode: false,
-                                    drawerPosition: 'right',
-                                })}
-                        >
-                            C<br />
-                            R<br />
-                            E<br />
-                            A<br />
-                            T<br />
-                            E<br />
-                        </span>
                     </Grid>
                 </Grid>
             </div >
@@ -253,7 +215,6 @@ class Users extends React.Component {
 
         return (
             <Drawer
-                anchor={this.state.drawerPosition}
                 className={classes.drawer}
                 classes={{
                     paper: classes.drawerPaper,
@@ -308,58 +269,16 @@ class Users extends React.Component {
                     </Select>
                 </FormControl>
 
-                <Autocomplete
-                    style={{ marginTop: 16 }}
-                    multiple
-                    options={['Location', 'Mobile']}
-                    getOptionLabel={(option) => option}
-                    value={this.state.editableItem.modules}
-                    onChange={(event, value) => this.setState({ editableItem: { ...this.state.editableItem, modules: value } })}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            variant="standard"
-                            label="Modules"
-                        />
-                    )}
-                />
 
-                <Grid container spacing={1} style={{ marginTop: 24 }}>
-                    <Grid item md={6}>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            fullWidth
-                            startIcon={<Delete />}
-                            onClick={
-                                () => this.setState({
-                                    drawerOpen: false,
-                                    editMode: false,
-                                    editableItem: {
-                                        name: '',
-                                        designation: '',
-                                        cases: [],
-                                        department: '',
-                                        modules: [],
-                                    },
-                                })
-                            }
-                        >
-                            {this.state.editMode ? 'Delete' : 'Cancel'}
-                        </Button>
-                    </Grid>
-
-                    <Grid item md={6}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            startIcon={this.state.editMode ? <Edit /> : <Add />}
-                        >
-                            {this.state.editMode ? 'Edit' : 'Create'}
-                        </Button>
-                    </Grid>
-                </Grid>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    style={{ marginTop: 32 }}
+                    startIcon={this.state.editMode ? <Edit /> : <Add />}
+                >
+                    {this.state.editMode ? 'Update' : 'Create'}
+                </Button>
             </Drawer>
         );
     }

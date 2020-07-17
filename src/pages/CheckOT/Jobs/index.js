@@ -81,53 +81,16 @@ const styles = (theme) => ({
 });
 
 
-class CaseIntel extends React.Component {
+class Jobs extends React.Component {
     constructor(props) {
         super(props);
         this.getDrawer = this.getDrawer.bind(this);
-        this.getCaseSelectionComponent = this.getCaseSelectionComponent.bind(this);
-        this.getCaseMetadataComponent = this.getCaseMetadataComponent.bind(this);
         this.getJobsTableComponent = this.getJobsTableComponent.bind(this);
     }
 
     state = {
         drawerOpen: false,
         editMode: false,
-        selectedCase: null,
-        cases: [
-            {
-                id: 1,
-                name: 'Bomb blast at Place X',
-                description: 'Sample description',
-                category: 'Bomb Blast',
-                status: 'Open',
-                users: ['Abhishek', 'Darshan'],
-            },
-            {
-                id: 2,
-                name: 'Robbery at Place X',
-                description: 'Sample description',
-                category: 'Robbery',
-                status: 'Open',
-                users: ['Srikanth'],
-            },
-            {
-                id: 3,
-                name: 'Bomb blast at Place X',
-                description: 'Sample description',
-                category: 'Bomb Blast',
-                status: 'Close',
-                users: ['Abhishek', 'Darshan'],
-            },
-            {
-                id: 4,
-                name: 'Robbery at Place X',
-                description: 'Sample description',
-                category: 'Robbery',
-                status: 'Close',
-                users: ['Srikanth'],
-            },
-        ],
         selectedCaseJobsList: [
             {
                 id: 1,
@@ -184,17 +147,16 @@ class CaseIntel extends React.Component {
 
     render() {
         const {
-            classes
+            classes,
+            selectedCase
         } = this.props;
 
         return (
-            <div style={{paddingBottom: 32}}>
+            <div style={{ paddingBottom: 32 }}>
                 {this.getDrawer()}
 
-                {this.getCaseSelectionComponent()}
-
                 {
-                    this.state.selectedCase ?
+                    selectedCase.id !== -1 ?
                         <Grid container>
                             <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
                                 <span
@@ -215,8 +177,6 @@ class CaseIntel extends React.Component {
                             </Grid>
 
                             <Grid item md={11}>
-                                {this.getCaseMetadataComponent()}
-
                                 {this.getJobsTableComponent()}
                             </Grid>
                         </Grid>
@@ -306,101 +266,11 @@ class CaseIntel extends React.Component {
         );
     }
 
-
-    getCaseSelectionComponent() {
-        return (
-            <Autocomplete
-                style={{ marginTop: 16, marginLeft: 16, marginRight: 16 }}
-                options={this.state.cases}
-                getOptionLabel={(option) => `Case ${option.id} - ${option.name}`}
-                value={this.state.selectedCase}
-                onChange={(event, value) => this.setState({ selectedCase: value })}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        variant="standard"
-                        label="Cases"
-                        placeholder="Select Case by entering ID or name"
-                    />
-                )}
-            />
-        );
-    }
-
-    getCaseMetadataComponent() {
-        const {
-            classes
-        } = this.props;
-
-        return (
-            <Card
-                elevation={4}
-                style={{ marginTop: 32, marginRight: 16 }}
-            >
-                <CardContent>
-                    <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
-                        Case Summary
-                    </Typography>
-
-                    <b>ID: </b>
-                    {
-                        this.state.selectedCase ? this.state.selectedCase.id : ''
-                    }
-                    <br />
-
-                    <b>Name: </b>
-                    {
-                        this.state.selectedCase ? this.state.selectedCase.name : ''
-                    }
-                    <br />
-
-                    <b>Description: </b>
-                    {
-
-                        this.state.selectedCase ? this.state.selectedCase.description : ''
-                    }
-                    <br />
-
-                    <b>Category: </b>
-                    {
-
-                        this.state.selectedCase ? this.state.selectedCase.category : ''
-                    }
-                    <br />
-
-                    <b>Status: </b>
-                    {
-                        this.state.selectedCase ?
-                            <span style={{ color: this.state.selectedCase.status === 'Open' ? 'green' : 'red' }}>
-                                {this.state.selectedCase.status}
-                            </span>
-                            : ''
-                    }
-                    <br />
-
-                    <div style={{ marginTop: 16 }} />
-
-                    <b>Users: </b>
-                    {
-                        this.state.selectedCase ?
-                            this.state.selectedCase.users.map((user, index) =>
-                                <Chip
-                                    key={index}
-                                    label={user}
-                                    className={classes.chip}
-                                />
-                            )
-                            : ''
-                    }
-                    <br />
-                </CardContent>
-            </Card>
-        );
-    }
-
     getJobsTableComponent() {
         const {
-            classes
+            classes,
+            selectedJob,
+            onRowSelect,
         } = this.props;
 
         return (
@@ -415,6 +285,9 @@ class CaseIntel extends React.Component {
                     exportButton: true,
                     actionsColumnIndex: -1,
                     paging: false,
+                    rowStyle: rowData => ({
+                        backgroundColor: (selectedJob.id === rowData.id) ? '#EEE' : '#FFF'
+                    })
                 }}
                 columns={[
                     { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
@@ -441,9 +314,10 @@ class CaseIntel extends React.Component {
                         },
                     }
                 ]}
+                onRowClick={onRowSelect}
             />
         );
     }
 };
 
-export default withStyles(styles)(CaseIntel);
+export default withStyles(styles)(Jobs);

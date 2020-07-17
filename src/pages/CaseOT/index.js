@@ -12,7 +12,6 @@ import {
 import CustomAppBar from '../../components/CustomAppBar';
 import Cases from './Cases';
 import CaseIntel from './CaseIntel';
-import Reports from './Reports';
 
 const styles = (theme) => ({
 
@@ -57,7 +56,6 @@ class CaseOT extends React.Component {
                 >
                     <Tab label={<b style={{ color: 'white' }}>Cases</b>} value='Cases' />
                     <Tab label={<b style={{ color: 'white' }}>Case Intel</b>} value='Case-Intel' />
-                    <Tab label={<b style={{ color: 'white' }}>Reports</b>} value='Reports' />
                 </Tabs>
             </div>
         );
@@ -68,7 +66,6 @@ class CaseOT extends React.Component {
             <div>
                 {this.state.activeTab === 'Cases' ? <Cases /> : <div />}
                 {this.state.activeTab === 'Case-Intel' ? <CaseIntel /> : <div />}
-                {this.state.activeTab === 'Reports' ? <Reports /> : <div />}
             </div>
         );
     }

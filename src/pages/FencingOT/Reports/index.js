@@ -74,7 +74,7 @@ const styles = (theme) => ({
     drawer: {
     },
     widgetListItem: {
-        marginRight: 20
+        marginRight: 24
     }
 });
 
@@ -337,11 +337,15 @@ class Reports extends React.Component {
                                 }
 
                                 {
-                                    this.state.activeWidget === 'Map' ? <div /> : <div />
+                                    this.state.activeWidget === 'Map' ?
+                                        <DataMapQuery />
+                                        : <div />
                                 }
 
                                 {
-                                    this.state.activeWidget === 'Linktree' ? <div /> : <div />
+                                    this.state.activeWidget === 'Linktree' ?
+                                        <LinkTreeQuery />
+                                        : <div />
                                 }
 
                                 {

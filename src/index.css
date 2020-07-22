@@ -1,3 +1,5 @@
+@import url("../node_modules/vis-network/dist/dist/vis-network.css");
+
 @font-face {
   font-family: 'Montserrat-Regular';
   src: local('Montserrat-Regular'), url(./assets/fonts/Montserrat-Regular.ttf) format('truetype');
@@ -19,4 +21,12 @@ code {
 
 span {
   font-family: 'Montserrat-Regular';
+}
+
+.vis-network {
+  overflow:visible;
+}
+
+.network-tooltip {
+  position: absolute !important;
 }

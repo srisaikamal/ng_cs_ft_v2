@@ -29,7 +29,6 @@ import MaterialTable from "material-table";
 // Local
 import CustomAppBar from '../../components/CustomAppBar';
 import Cases from './Cases';
-import Jobs from './Jobs';
 import Reports from './Reports';
 
 const tableIcons = {
@@ -74,15 +73,6 @@ class FencingOT extends React.Component {
             category: '',
             status: '',
             users: [],
-        },
-        selectedJob: {
-            id: -1,
-            case: -1,
-            serverJobId: -1,
-            status: '',
-            category: '',
-            eventStartDate: '',
-            eventEndDate: '',
         }
     }
 
@@ -99,10 +89,9 @@ class FencingOT extends React.Component {
 
     getHeader() {
         let casesTabTitle = 'Cases';
-        if (this.state.selectedCase.id !== -1) casesTabTitle += ` <${this.state.selectedCase.name}>`;
-
-        let jobsTabTitle = 'Jobs';
-        if (this.state.selectedCase.id !== -1 && this.state.selectedJob.id !== -1) jobsTabTitle += ` <${this.state.selectedJob.category}>`;
+        if (this.state.selectedCase.id !== -1) {
+            casesTabTitle += ` <${this.state.selectedCase.name}>`;
+        }
 
 
         return (
@@ -122,8 +111,11 @@ class FencingOT extends React.Component {
                     onChange={(event, newVal) => this.setState({ activeTab: newVal })}
                 >
                     <Tab label={<b style={{ color: 'white' }}>{casesTabTitle}</b>} value='Cases' />
-                    {this.state.selectedCase.id !== -1 ? <Tab label={<b style={{ color: 'white' }}>{jobsTabTitle}</b>} value='Jobs' /> : <div />}
-                    {this.state.selectedCase.id !== -1 && this.state.selectedJob.id !== -1 ? <Tab label={<b style={{ color: 'white' }}>Reports</b>} value='Reports' /> : <div />}
+                    {
+                        this.state.selectedCase.id !== -1 ?
+                            <Tab label={<b style={{ color: 'white' }}>Reports</b>} value='Reports' />
+                            : <div />
+                    }
                 </Tabs>
             </div>
         );
@@ -134,24 +126,7 @@ class FencingOT extends React.Component {
             case 'Cases':
                 return <Cases
                     selectedCase={this.state.selectedCase}
-                    onRowSelect={(event, selectedRow) => this.setState({
-                        selectedCase: selectedRow,
-                        selectedJob: {
-                            id: -1,
-                            case: -1,
-                            serverJobId: -1,
-                            status: '',
-                            category: '',
-                            eventStartDate: '',
-                            eventEndDate: '',
-                        }
-                    })}
-                />;
-            case 'Jobs':
-                return <Jobs
-                    selectedCase={this.state.selectedCase}
-                    selectedJob={this.state.selectedJob}
-                    onRowSelect={(event, selectedRow) => this.setState({ selectedJob: selectedRow })}
+                    onRowSelect={(event, selectedRow) => this.setState({ selectedCase: selectedRow, })}
                 />;
             default:
                 return <Reports

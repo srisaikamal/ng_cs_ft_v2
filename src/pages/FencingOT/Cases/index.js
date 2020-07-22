@@ -144,7 +144,6 @@ class Cases extends React.Component {
                                 Container: props => <Paper {...props} elevation={0} />
                             }}
                             options={{
-                                grouping: true,
                                 exportButton: true,
                                 paging: false,
                                 rowStyle: rowData => ({

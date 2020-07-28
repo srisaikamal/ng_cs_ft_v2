@@ -5,13 +5,6 @@ import {
     Grid,
     InputLabel,
     MenuItem,
-
-
-
-
-
-
-
     Paper, Select,
     TextField,
     Typography,
@@ -99,6 +92,7 @@ class CaseIntel extends React.Component {
                 category: 'Bomb Blast',
                 status: 'Open',
                 users: ['Abhishek', 'Darshan'],
+                targets: ['123456789', '987654321'],
             },
             {
                 id: 2,
@@ -107,6 +101,7 @@ class CaseIntel extends React.Component {
                 category: 'Robbery',
                 status: 'Open',
                 users: ['Srikanth'],
+                targets: [],
             },
             {
                 id: 3,
@@ -115,6 +110,7 @@ class CaseIntel extends React.Component {
                 category: 'Bomb Blast',
                 status: 'Close',
                 users: ['Abhishek', 'Darshan'],
+                targets: ['123456789', '987654321'],
             },
             {
                 id: 4,
@@ -123,6 +119,7 @@ class CaseIntel extends React.Component {
                 category: 'Robbery',
                 status: 'Close',
                 users: ['Srikanth'],
+                targets: [],
             },
         ],
         selectedCaseJobsList: [
@@ -384,6 +381,20 @@ class CaseIntel extends React.Component {
                                 <Chip
                                     key={index}
                                     label={user}
+                                    className={classes.chip}
+                                />
+                            )
+                            : ''
+                    }
+                    <br />
+
+                    <b>Targets: </b>
+                    {
+                        this.state.selectedCase ?
+                            this.state.selectedCase.targets.map((target, index) =>
+                                <Chip
+                                    key={index}
+                                    label={target}
                                     className={classes.chip}
                                 />
                             )

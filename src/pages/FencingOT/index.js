@@ -55,6 +55,9 @@ const styles = (theme) => ({
     chip: {
         margin: theme.spacing(0.5),
     },
+    tabs: {
+        backgroundColor: theme.palette.primary.main,
+    },
 });
 
 class FencingOT extends React.Component {
@@ -73,6 +76,7 @@ class FencingOT extends React.Component {
             category: '',
             status: '',
             users: [],
+            targets: [],
         }
     }
 
@@ -88,6 +92,9 @@ class FencingOT extends React.Component {
     }
 
     getHeader() {
+        const {
+            classes
+        } = this.props;
         let casesTabTitle = 'Cases';
         if (this.state.selectedCase.id !== -1) {
             casesTabTitle += ` <${this.state.selectedCase.name}>`;
@@ -104,7 +111,7 @@ class FencingOT extends React.Component {
                     onTrailingIconPress={() => window.location = '/'}
                 />
                 <Tabs
-                    style={{ backgroundColor: '#3f51b5' }}
+                    className={classes.tabs}
                     variant='fullWidth'
                     centered
                     value={this.state.activeTab}

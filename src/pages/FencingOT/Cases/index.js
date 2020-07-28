@@ -98,6 +98,7 @@ class Cases extends React.Component {
                 category: 'Bomb Blast',
                 status: 'Open',
                 users: ['Abhishek', 'Darshan'],
+                targets: ['123456789', '987654321']
             },
             {
                 id: 2,
@@ -106,6 +107,7 @@ class Cases extends React.Component {
                 category: 'Robbery',
                 status: 'Open',
                 users: ['Srikanth'],
+                targets: []
             },
             {
                 id: 3,
@@ -114,6 +116,7 @@ class Cases extends React.Component {
                 category: 'Bomb Blast',
                 status: 'Close',
                 users: ['Abhishek', 'Darshan'],
+                targets: ['123456789', '987654321'],
             },
             {
                 id: 4,
@@ -122,6 +125,7 @@ class Cases extends React.Component {
                 category: 'Robbery',
                 status: 'Close',
                 users: ['Srikanth'],
+                targets: []
             },
         ]
     }
@@ -174,6 +178,23 @@ class Cases extends React.Component {
                                                     <Chip
                                                         key={index}
                                                         label={user}
+                                                        className={classes.chip}
+                                                    />
+                                                )
+                                            }
+                                        </div>
+                                },
+                                {
+                                    title: "Targets",
+                                    field: "targets",
+                                    grouping: false,
+                                    render: rowData =>
+                                        <div>
+                                            {
+                                                rowData.targets.map((target, index) =>
+                                                    <Chip
+                                                        key={index}
+                                                        label={target}
                                                         className={classes.chip}
                                                     />
                                                 )
@@ -274,6 +295,22 @@ class Cases extends React.Component {
                             {...params}
                             variant="standard"
                             label="Users"
+                        />
+                    )}
+                />
+
+                <Autocomplete
+                    style={{ marginTop: 16 }}
+                    multiple
+                    options={['123456789', '987654321']}
+                    getOptionLabel={(option) => option}
+                    value={this.state.editableItem.targets}
+                    onChange={(event, value) => this.setState({ editableItem: { ...this.state.editableItem, targets: value } })}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            variant="standard"
+                            label="Targets"
                         />
                     )}
                 />

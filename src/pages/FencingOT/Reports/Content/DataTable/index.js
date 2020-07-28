@@ -1,18 +1,5 @@
+import { Paper, withStyles, colors } from '@material-ui/core';
 import {
-    withStyles,
-    Slide,
-    Paper,
-    Grid,
-    Card,
-    CardContent,
-    IconButton,
-    Typography,
-    Chip,
-} from '@material-ui/core';
-import {
-    TableChart,
-    Timeline,
-    People,
     AddBox,
     ArrowDownward,
     Check,
@@ -27,12 +14,10 @@ import {
     Remove,
     SaveAlt,
     Search,
-    ViewColumn,
-    Delete,
-    Map,
+    ViewColumn
 } from '@material-ui/icons';
-import React, { forwardRef } from 'react';
 import MaterialTable from "material-table";
+import React, { forwardRef } from 'react';
 // Local
 
 
@@ -62,12 +47,33 @@ const styles = theme => ({
     },
 });
 
-function convertObjectKeyToTableColumnObject(arr) {
+function convertObjectKeyToTableColumnObject(arr, tableData) {
     let resultsArr = [];
     arr.forEach(element => {
+        let lookUpMap = {};
+
+        tableData.forEach(row => {
+            let columnVal = row[element];
+            lookUpMap[columnVal] = columnVal;
+        });
+
         let obj = {
             field: element,
-            title: element
+            title: element,
+            lookup: lookUpMap,
+            headerStyle: {
+                backgroundColor: colors.orange[500],
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: 18,
+            }
+        }
+
+        if (element === 'id') {
+            obj['cellStyle'] = {
+                backgroundColor: colors.orange[500],
+                color: 'white',
+            };
         }
         resultsArr.push(obj);
     });
@@ -93,8 +99,9 @@ class DataTable extends React.PureComponent {
                         grouping: true,
                         exportButton: true,
                         paging: false,
+                        filtering: true,
                     }}
-                    columns={convertObjectKeyToTableColumnObject(selectedColumns)}
+                    columns={convertObjectKeyToTableColumnObject(selectedColumns, tableData)}
                     data={tableData}
                     title='Data Table'
                 />

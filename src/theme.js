@@ -1,9 +1,12 @@
-import indigo from '@material-ui/core/colors/indigo';
+import orange from '@material-ui/core/colors/orange';
 import { createMuiTheme } from '@material-ui/core/styles';
 
 const theme = createMuiTheme({
     palette: {
-        primary: indigo
+        primary: {
+            main: '#212121'
+        },
+        secondary: orange,
     },
     typography: {
         fontFamily: 'Montserrat-Regular',
@@ -16,8 +19,8 @@ const theme = createMuiTheme({
         MuiTab: {
             fullWidth: {
                 maxWidth: 'initial'
-            }
-        }
+            },
+        },
     }
 });
 

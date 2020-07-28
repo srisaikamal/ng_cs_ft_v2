@@ -3,6 +3,7 @@ import {
     Slide,
     Paper,
     Grid,
+    Chip,
     Card,
     CardContent,
     IconButton,
@@ -85,6 +86,7 @@ class Reports extends React.Component {
         this.getMainContent = this.getMainContent.bind(this);
         this.getLeftDrawer = this.getLeftDrawer.bind(this);
         this.getRightDrawer = this.getRightDrawer.bind(this);
+        this.getCaseMetadataComponent = this.getCaseMetadataComponent.bind(this);
         this.getJobsTableComponent = this.getJobsTableComponent.bind(this);
         this.getWidgetsListComponent = this.getWidgetsListComponent.bind(this);
     }
@@ -100,6 +102,7 @@ class Reports extends React.Component {
                 serverJobId: -1,
                 status: 'Pending',
                 category: 'IMSI',
+                query: '123456789',
                 eventStartDate: 'July 1, 2020',
                 eventEndDate: 'July 3, 2020',
             },
@@ -109,6 +112,7 @@ class Reports extends React.Component {
                 serverJobId: -1,
                 status: 'Completed',
                 category: 'MSISDN',
+                query: '123456789',
                 eventStartDate: 'Feb 1, 2020',
                 eventEndDate: 'Mar 3, 2020',
             },
@@ -118,6 +122,7 @@ class Reports extends React.Component {
                 serverJobId: -1,
                 status: 'Pending',
                 category: 'Cell Site',
+                query: '123456789',
                 eventStartDate: 'Jan 1, 2020',
                 eventEndDate: 'June 3, 2020',
             },
@@ -127,6 +132,7 @@ class Reports extends React.Component {
                 serverJobId: -1,
                 status: 'Completed',
                 category: 'IMEI',
+                query: '123456789',
                 eventStartDate: 'Apr 1, 2020',
                 eventEndDate: 'May 3, 2020',
             },
@@ -136,6 +142,7 @@ class Reports extends React.Component {
                 serverJobId: -1,
                 status: 'Pending',
                 category: 'IMSI',
+                query: '123456789',
                 eventStartDate: 'Jan 1, 2020',
                 eventEndDate: 'Jun 3, 2020',
             }
@@ -215,6 +222,17 @@ class Reports extends React.Component {
                         leftDrawerOpen ?
                             <div style={{ padding: 16 }}>
                                 <Typography component='h5' variant='h5' style={{ marginBottom: 32 }}>
+                                    <b>Selected Case Summary</b>
+                                </Typography>
+                                {this.getCaseMetadataComponent()}
+                            </div>
+                            : <div />
+                    }
+
+                    {
+                        leftDrawerOpen ?
+                            <div style={{ padding: 8 }}>
+                                <Typography component='h5' variant='h5' style={{ marginBottom: 32 }}>
                                     <b>Jobs</b>
                                 </Typography>
 
@@ -249,6 +267,73 @@ class Reports extends React.Component {
         );
     }
 
+    getCaseMetadataComponent() {
+        const {
+            classes,
+            selectedCase,
+        } = this.props;
+
+        return (
+            <div>
+                <b>ID: </b>
+                {selectedCase.id}
+                <br />
+
+                <b>Name: </b>
+                {selectedCase.name}
+                <br />
+
+                <b>Description: </b>
+                {selectedCase.description}
+                <br />
+
+                <b>Category: </b>
+                {selectedCase.category}
+                <br />
+
+                <b>Status: </b>
+                {
+                    <span style={{ color: selectedCase.status === 'Open' ? 'green' : 'red' }}>
+                        {selectedCase.status}
+                    </span>
+                }
+                <br />
+
+                <div style={{ marginTop: 16 }} />
+
+                <b>Users: </b>
+                {
+                    selectedCase ?
+                        selectedCase.users.map((user, index) =>
+                            <Chip
+                                key={index}
+                                label={user}
+                                className={classes.chip}
+                            />
+                        )
+                        : ''
+                }
+                <br />
+
+                <b>Targets: </b>
+                {
+                    selectedCase ?
+                        selectedCase.targets.map((target, index) =>
+                            <Chip
+                                key={index}
+                                label={target}
+                                className={classes.chip}
+                            />
+                        )
+                        : ''
+                }
+                <br />
+
+            </div>
+        );
+    }
+
+
     getJobsTableComponent() {
         const {
             classes
@@ -257,17 +342,16 @@ class Reports extends React.Component {
         return (
             <MaterialTable
                 icons={tableIcons}
-                style={{ marginTop: 32, marginRight: 16 }}
                 components={{
                     Container: props => <Paper {...props} elevation={0} />
                 }}
                 options={{
-                    actionsColumnIndex: -1,
                     paging: false,
                 }}
                 columns={[
                     // { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
                     { title: "Category", field: "category" },
+                    { title: "Query", field: "query" },
                     {
                         title: "Status",
                         field: "status",
@@ -282,13 +366,6 @@ class Reports extends React.Component {
                 data={this.state.selectedCaseJobsList}
                 title=''
                 actions={[
-                    {
-                        icon: () => <Delete color='error' />,
-                        tooltip: 'Delete Job',
-                        onClick: (event, rowData) => {
-                            // Do Delete operation
-                        },
-                    },
                     {
                         icon: () => <AddBox color='action' />,
                         tooltip: 'Add Job',

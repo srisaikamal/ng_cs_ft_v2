@@ -14,7 +14,9 @@ import Cases from './Cases';
 import CaseIntel from './CaseIntel';
 
 const styles = (theme) => ({
-
+    tabs: {
+        backgroundColor: theme.palette.primary.main,
+    }
 });
 
 class CaseOT extends React.Component {
@@ -38,6 +40,10 @@ class CaseOT extends React.Component {
     }
 
     getHeader() {
+        const {
+            classes
+        } = this.props;
+
         return (
             <div>
                 <CustomAppBar
@@ -48,7 +54,7 @@ class CaseOT extends React.Component {
                     onTrailingIconPress={() => window.location = '/'}
                 />
                 <Tabs
-                    style={{ backgroundColor: '#3f51b5' }}
+                    className={classes.tabs}
                     variant='fullWidth'
                     centered
                     value={this.state.activeTab}

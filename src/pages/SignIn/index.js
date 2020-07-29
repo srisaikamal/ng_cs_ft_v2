@@ -1,17 +1,21 @@
-import React from "react";
 import {
-  withStyles,
   Avatar,
   Button,
+  Container,
   CssBaseline,
   TextField,
-  Typography,
-  Container,
+  Typography, withStyles
 } from "@material-ui/core";
 import { LockOutlined } from "@material-ui/icons";
+import { Alert } from "@material-ui/lab";
+import axios from "axios";
+import React from "react";
+// Local
+import { apiHost } from "../../config";
 
 const styles = (theme) => ({
   paper: {
+    flex: 1,
     marginTop: theme.spacing(8),
     display: "flex",
     flexDirection: "column",
@@ -35,6 +39,8 @@ class SignIn extends React.Component {
   state = {
     email: '',
     password: '',
+    error: null,
+    loading: false,
   }
 
   render() {
@@ -61,7 +67,7 @@ class SignIn extends React.Component {
             fullWidth
             label="Email Address"
             autoFocus
-            onChange={event => this.setState({ email: event.target.value })}
+            onChange={event => this.setState({ email: event.target.value, error: null })}
           />
 
           <TextField
@@ -71,7 +77,7 @@ class SignIn extends React.Component {
             fullWidth
             label="Password"
             type="password"
-            onChange={event => this.setState({ password: event.target.value })}
+            onChange={event => this.setState({ password: event.target.value, error: null })}
           />
 
           <Button
@@ -85,6 +91,9 @@ class SignIn extends React.Component {
             <b>Sign In</b>
           </Button>
 
+          {
+            this.state.error && <Alert severity="error">{this.state.error}</Alert>
+          }
         </div>
       </Container>
     );
@@ -94,7 +103,24 @@ class SignIn extends React.Component {
     const email = this.state.email;
     const password = this.state.password;
 
-    window.location = '/landing/';
+    const requestBody = {
+      'operation': 'login',
+      'username': email,
+      'password': password,
+    };
+    const apiEndpoint = apiHost + '/auth/';
+
+    try {
+      let response = await axios.post(apiEndpoint, requestBody);
+      response = response.data;
+      let accessToken = response['token'];
+      axios.defaults.headers.common['Authorization'] = `Token ${accessToken}`;
+      window.location = '/landing';
+      // console.log('[onSignInButtonPress] : ' + JSON.stringify(response));
+    } catch (error) {
+      let errorMessage = JSON.stringify(error.response.data['error']);
+      this.setState({ error: errorMessage });
+    }
   }
 }
 

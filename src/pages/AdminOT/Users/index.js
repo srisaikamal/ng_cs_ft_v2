@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
     Button, Chip,
     Drawer,
@@ -34,7 +35,7 @@ import { Autocomplete } from '@material-ui/lab';
 import MaterialTable from "material-table";
 import React, { forwardRef } from 'react';
 // Local
-import { drawerWidth } from '../../../config';
+import { drawerWidth, apiHost } from '../../../config';
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -76,11 +77,14 @@ class Users extends React.Component {
     constructor(props) {
         super(props);
         this.getDrawer = this.getDrawer.bind(this);
+        this.getUsersList = this.getUsersList.bind(this);
     }
 
     state = {
         drawerOpen: false,
         editMode: false,
+        error: null,
+        loading: false,
         editableItem: {
             name: '',
             designation: '',
@@ -170,17 +174,21 @@ class Users extends React.Component {
                                     render: rowData =>
                                         <div>
                                             {
-                                                rowData.cases.map((caseName, index) =>
+                                                rowData.cases.map((caseItem, index) =>
                                                     <Chip
                                                         key={index}
-                                                        label={caseName}
+                                                        label={caseItem.name}
                                                         className={classes.chip}
                                                     />
                                                 )
                                             }
                                         </div>
                                 },
-                                { title: "Department", field: "department" },
+                                {
+                                    title: "Department",
+                                    field: "department",
+                                    render: rowData => rowData.department.name
+                                },
                             ]}
                             data={this.state.tableData}
                             title='Users List'
@@ -206,6 +214,21 @@ class Users extends React.Component {
                 </Grid>
             </div >
         );
+    }
+
+    componentDidMount() {
+        this.getUsersList();
+    }
+
+    async getUsersList() {
+        try {
+            const apiEndpoint = apiHost + '/accounts/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            this.setState({ tableData: response });
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     getDrawer() {

@@ -1,4 +1,4 @@
-import { Paper, withStyles, colors } from '@material-ui/core';
+import { colors, Paper, withStyles } from '@material-ui/core';
 import {
     AddBox,
     ArrowDownward,
@@ -19,7 +19,9 @@ import {
 import MaterialTable from "material-table";
 import React, { forwardRef } from 'react';
 // Local
-
+import {
+    apiHost,
+} from '../../../../../config';
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -69,22 +71,19 @@ function convertObjectKeyToTableColumnObject(arr, tableData) {
             }
         }
 
-        if (element === 'id') {
-            obj['cellStyle'] = {
-                backgroundColor: colors.orange[500],
-                color: 'white',
-            };
-        }
         resultsArr.push(obj);
     });
     return resultsArr;
 }
 
 class DataTable extends React.PureComponent {
+    state = {
+        tableData: [],
+    }
+
     render() {
         const {
             classes,
-            tableData,
             selectedColumns,
         } = this.props;
 
@@ -98,12 +97,29 @@ class DataTable extends React.PureComponent {
                     options={{
                         grouping: true,
                         exportButton: true,
-                        paging: false,
+                        paging: true,
                         filtering: true,
+                        search: false,
                     }}
-                    columns={convertObjectKeyToTableColumnObject(selectedColumns, tableData)}
-                    data={tableData}
-                    title='Data Table'
+                    columns={convertObjectKeyToTableColumnObject(selectedColumns, this.state.tableData)}
+                    title='Call Detail Records'
+                    data={query =>
+                        new Promise((resolve, reject) => {
+                            let url = apiHost + '/cdr/?';
+                            url += 'page_size=' + query.pageSize;
+                            url += '&page=' + (query.page + 1);
+                            fetch(url)
+                                .then(response => response.json())
+                                .then(result => {
+                                    this.setState({ tableData: result.results });
+                                    resolve({
+                                        data: result.results,
+                                        page: result.current - 1,
+                                        totalCount: result.total_records,
+                                    });
+                                })
+                        })
+                    }
                 />
             </div>
         );

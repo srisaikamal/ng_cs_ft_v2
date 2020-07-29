@@ -77,7 +77,11 @@ class Users extends React.Component {
     constructor(props) {
         super(props);
         this.getDrawer = this.getDrawer.bind(this);
+        this.getDepartmentsList = this.getDepartmentsList.bind(this);
         this.getUsersList = this.getUsersList.bind(this);
+        this.onCreateOrEditButtonPress = this.onCreateOrEditButtonPress.bind(this);
+        this.resetToDefault = this.resetToDefault.bind(this);
+        this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
     }
 
     state = {
@@ -85,38 +89,19 @@ class Users extends React.Component {
         editMode: false,
         error: null,
         loading: false,
+        designationOptions: [],
+        departmentOptions: [],
+        departmentNameIdMap: {},
+        tableData: [],
         editableItem: {
             name: '',
+            username: '',
+            password: '',
+            disabled: false,
             designation: '',
             cases: [],
             department: '',
         },
-        tableData: [
-            {
-                name: 'Darshan',
-                designation: 'Analyst',
-                cases: ['Bomb blast at market', 'Case 2', 'Case 3'],
-                department: 'Dept A',
-            },
-            {
-                name: 'Abhishek',
-                designation: 'Supervisor',
-                cases: ['Bomb blast at market', 'Case 2'],
-                department: 'Dept C',
-            },
-            {
-                name: 'Boopathi',
-                designation: 'Analyst',
-                cases: ['Case 2', 'Case 3'],
-                department: 'Dept B',
-            },
-            {
-                name: 'Srikanth',
-                designation: 'Analyst',
-                cases: ['Bomb blast at market', 'Case 3'],
-                department: 'Dept A',
-            },
-        ]
     }
 
     render() {
@@ -133,14 +118,16 @@ class Users extends React.Component {
                             style={{ fontSize: 42, }}
                             onClick={
                                 () => this.setState({
-                                    drawerOpen: true,
                                     editableItem: {
                                         name: '',
+                                        username: '',
+                                        password: '',
+                                        disabled: false,
                                         designation: '',
                                         cases: [],
                                         department: '',
-                                        modules: [],
                                     },
+                                    drawerOpen: true,
                                     editMode: false,
                                 })}
                         >
@@ -166,6 +153,7 @@ class Users extends React.Component {
                             }}
                             columns={[
                                 { title: "Name", field: "name" },
+                                { title: "Username", field: "username" },
                                 { title: "Designation", field: "designation" },
                                 {
                                     title: "Cases",
@@ -177,7 +165,7 @@ class Users extends React.Component {
                                                 rowData.cases.map((caseItem, index) =>
                                                     <Chip
                                                         key={index}
-                                                        label={caseItem.name}
+                                                        label={caseItem}
                                                         className={classes.chip}
                                                     />
                                                 )
@@ -187,7 +175,6 @@ class Users extends React.Component {
                                 {
                                     title: "Department",
                                     field: "department",
-                                    render: rowData => rowData.department.name
                                 },
                             ]}
                             data={this.state.tableData}
@@ -198,7 +185,13 @@ class Users extends React.Component {
                                     tooltip: 'Edit User',
                                     onClick: (event, rowData) => {
                                         // Do edit operation
-                                        this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
+                                        let editableItem = Object.assign({}, rowData);
+                                        editableItem.department = editableItem.department.name;
+                                        this.setState({
+                                            drawerOpen: true,
+                                            editableItem: editableItem,
+                                            editMode: true,
+                                        });
                                     }
                                 },
                                 {
@@ -206,6 +199,7 @@ class Users extends React.Component {
                                     tooltip: 'Delete User',
                                     onClick: (event, rowData) => {
                                         // Do Delete operation
+                                        this.onDeleteButtonPress(rowData);
                                     },
                                 }
                             ]}
@@ -217,7 +211,33 @@ class Users extends React.Component {
     }
 
     componentDidMount() {
+        this.getDepartmentsList();
         this.getUsersList();
+    }
+
+    async getDepartmentsList() {
+        try {
+            const apiEndpoint = apiHost + '/departments/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+
+            let departmentOptions = new Set();
+            let departmentNameIdMap = {};
+
+            response.forEach(department => {
+                departmentOptions.add(department['name']);
+                departmentNameIdMap[department['name']] = department['id'];
+            });
+
+            departmentOptions = Array.from(departmentOptions);
+            this.setState({
+                departmentOptions: departmentOptions,
+                departmentNameIdMap: departmentNameIdMap
+            });
+
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     async getUsersList() {
@@ -225,7 +245,17 @@ class Users extends React.Component {
             const apiEndpoint = apiHost + '/accounts/';
             let response = await axios.get(apiEndpoint);
             response = response.data;
-            this.setState({ tableData: response });
+            response.forEach((user, index) => {
+                response[index]['department'] = user['department']['name'];
+                let userCases = [];
+                user['cases'].forEach(caseItem => {
+                    userCases.push(caseItem['name']);
+                });
+                response[index]['cases'] = userCases;
+            });
+            this.setState({
+                tableData: response,
+            });
         } catch (error) {
             console.log(error);
         }
@@ -243,19 +273,7 @@ class Users extends React.Component {
                     paper: classes.drawerPaper,
                 }}
                 open={this.state.drawerOpen}
-                onClose={
-                    () => this.setState({
-                        drawerOpen: false,
-                        editMode: false,
-                        editableItem: {
-                            name: '',
-                            designation: '',
-                            cases: [],
-                            department: '',
-                            modules: [],
-                        },
-                    })
-                }
+                onClose={this.resetToDefault}
             >
                 <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
                     {this.state.editMode ? 'Edit User' : 'Add User'}
@@ -267,6 +285,26 @@ class Users extends React.Component {
                     onChange={event => this.setState({ editableItem: { ...this.state.editableItem, name: event.target.value } })}
                 />
 
+
+                <TextField
+                    style={{ marginTop: 16 }}
+                    label='Username'
+                    value={this.state.editableItem.username}
+                    onChange={event => this.setState({ editableItem: { ...this.state.editableItem, username: event.target.value } })}
+                />
+
+
+                {
+                    !this.state.editMode &&
+                    <TextField
+                        style={{ marginTop: 16 }}
+                        label='Password'
+                        type='password'
+                        value={this.state.editableItem.password}
+                        onChange={event => this.setState({ editableItem: { ...this.state.editableItem, password: event.target.value } })}
+                    />
+                }
+
                 <FormControl style={{ marginTop: 16 }}>
                     <InputLabel id="designation-label">Designation</InputLabel>
                     <Select
@@ -274,10 +312,11 @@ class Users extends React.Component {
                         value={this.state.editableItem.designation}
                         onChange={event => this.setState({ editableItem: { ...this.state.editableItem, designation: event.target.value } })}
                     >
-                        <MenuItem value={'Analyst'}>Analyst</MenuItem>
                         <MenuItem value={'Supervisor'}>Supervisor</MenuItem>
+                        <MenuItem value={'Analyst'}>Analyst</MenuItem>
                     </Select>
                 </FormControl>
+
 
                 <FormControl style={{ marginTop: 16 }}>
                     <InputLabel id="department-label">Department</InputLabel>
@@ -286,9 +325,9 @@ class Users extends React.Component {
                         value={this.state.editableItem.department}
                         onChange={event => this.setState({ editableItem: { ...this.state.editableItem, department: event.target.value } })}
                     >
-                        <MenuItem value={'Dept A'}>Dept A</MenuItem>
-                        <MenuItem value={'Dept B'}>Dept B</MenuItem>
-                        <MenuItem value={'Dept C'}>Dept C</MenuItem>
+                        {
+                            this.state.departmentOptions.map(department => <MenuItem key={department} value={department}>{department}</MenuItem>)
+                        }
                     </Select>
                 </FormControl>
 
@@ -299,11 +338,65 @@ class Users extends React.Component {
                     fullWidth
                     style={{ marginTop: 32 }}
                     startIcon={this.state.editMode ? <Edit /> : <Add />}
+                    onClick={this.onCreateOrEditButtonPress}
                 >
                     {this.state.editMode ? 'Update' : 'Create'}
                 </Button>
             </Drawer>
         );
+    }
+
+    resetToDefault() {
+        this.setState({
+            drawerOpen: false,
+            editMode: false,
+            editableItem: {
+                name: '',
+                username: '',
+                password: '',
+                disabled: false,
+                designation: '',
+                cases: [],
+                department: '',
+            },
+        });
+    }
+
+    async onCreateOrEditButtonPress() {
+        try {
+            let apiEndpoint = apiHost + '/accounts/';
+            let payload = this.state.editableItem;
+            let departmentId = this.state.departmentNameIdMap[payload.department];
+            payload.department = departmentId;
+            if (this.state.editMode) {
+                apiEndpoint += `${payload.id}/`;
+                let response = await axios.put(apiEndpoint, payload);
+                response = response.data;
+                console.log(response);
+            }
+            else {
+                let response = await axios.post(apiEndpoint, payload);
+                response = response.data;
+                console.log(response);
+            }
+            this.resetToDefault();
+            this.componentDidMount();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async onDeleteButtonPress(rowData) {
+        try {
+            let apiEndpoint = apiHost + '/accounts/' + rowData.id + '/';
+            let response = await axios.delete(apiEndpoint);
+            response = response.data;
+            console.log(response);
+            this.resetToDefault();
+            this.componentDidMount();
+        } catch (error) {
+            console.log(error);
+        }
     }
 };
 

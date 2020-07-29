@@ -31,11 +31,12 @@ import {
     Search,
     ViewColumn
 } from '@material-ui/icons';
+import axios from 'axios';
 import { Autocomplete } from '@material-ui/lab';
 import MaterialTable from "material-table";
 import React, { forwardRef } from 'react';
 // Local
-import { drawerWidth } from '../../../config';
+import { drawerWidth, apiHost } from '../../../config';
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -77,6 +78,10 @@ class Departments extends React.Component {
     constructor(props) {
         super(props);
         this.getDrawer = this.getDrawer.bind(this);
+        this.getAllAccounts = this.getAllAccounts.bind(this);
+        this.getDepartmentsList = this.getDepartmentsList.bind(this);
+        this.onCreateOrEditButtonPress = this.onCreateOrEditButtonPress.bind(this);
+        this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
     }
 
     state = {
@@ -87,23 +92,9 @@ class Departments extends React.Component {
             zone: '',
             head: '',
         },
-        tableData: [
-            {
-                name: 'Dept A',
-                zone: 'Zone A',
-                head: 'Abhishek'
-            },
-            {
-                name: 'Dept B',
-                zone: 'Zone A',
-                head: 'Darshan'
-            },
-            {
-                name: 'Dept C',
-                zone: 'Zone B',
-                head: 'Srikanth'
-            }
-        ]
+        tableData: [],
+        departmentHeadOptions: [],
+        departmentZoneOptions: [],
     }
 
     render() {
@@ -121,12 +112,12 @@ class Departments extends React.Component {
                             onClick={
                                 () => this.setState({
                                     drawerOpen: true,
+                                    editMode: false,
                                     editableItem: {
                                         name: '',
                                         zone: '',
                                         head: '',
                                     },
-                                    editMode: false,
                                 })}
                         >
                             C<br />
@@ -148,6 +139,7 @@ class Departments extends React.Component {
                                 exportButton: true,
                                 actionsColumnIndex: -1,
                                 paging: false,
+                                search: true,
                             }}
                             columns={[
                                 { title: "Name", field: "name" },
@@ -162,7 +154,11 @@ class Departments extends React.Component {
                                     tooltip: 'Edit Department',
                                     onClick: (event, rowData) => {
                                         // Do edit operation
-                                        this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
+                                        this.setState({
+                                            drawerOpen: true,
+                                            editableItem: rowData,
+                                            editMode: true,
+                                        });
                                     }
                                 },
                                 {
@@ -170,6 +166,7 @@ class Departments extends React.Component {
                                     tooltip: 'Delete Department',
                                     onClick: (event, rowData) => {
                                         // Do Delete operation
+                                        this.onDeleteButtonPress(rowData);
                                     },
                                 }
                             ]}
@@ -180,10 +177,64 @@ class Departments extends React.Component {
         );
     }
 
+    componentDidMount() {
+        this.getAllAccounts();
+        this.getDepartmentsList();
+    }
+
+    async getDepartmentsList() {
+        try {
+            const apiEndpoint = apiHost + '/departments/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+
+            let departmentZoneOptions = new Set();
+
+            response.forEach(department => {
+                let departmentName = department['zone'];
+                departmentZoneOptions.add(departmentName);
+            });
+
+            departmentZoneOptions = Array.from(departmentZoneOptions);
+
+            this.setState({
+                tableData: response,
+                departmentZoneOptions: departmentZoneOptions,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async getAllAccounts() {
+        try {
+            const apiEndpoint = apiHost + '/accounts/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+
+            let departmentHeadOptions = new Set();
+
+            response.forEach(account => {
+                let accountName = account['name'];
+                departmentHeadOptions.add(accountName);
+            });
+
+            departmentHeadOptions = Array.from(departmentHeadOptions);
+
+            this.setState({
+                departmentHeadOptions: departmentHeadOptions
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
     getDrawer() {
         const {
             classes
         } = this.props;
+
 
         return (
             <Drawer
@@ -221,8 +272,9 @@ class Departments extends React.Component {
                         value={this.state.editableItem.zone}
                         onChange={event => this.setState({ editableItem: { ...this.state.editableItem, zone: event.target.value } })}
                     >
-                        <MenuItem value={'Zone A'}>Zone A</MenuItem>
-                        <MenuItem value={'Zone B'}>Zone B</MenuItem>
+                        {
+                            this.state.departmentZoneOptions.map(zone => <MenuItem key={zone} value={zone}>{zone}</MenuItem>)
+                        }
                     </Select>
                 </FormControl>
 
@@ -233,9 +285,9 @@ class Departments extends React.Component {
                         value={this.state.editableItem.head}
                         onChange={event => this.setState({ editableItem: { ...this.state.editableItem, head: event.target.value } })}
                     >
-                        <MenuItem value={'Abhishek'}>Abhishek</MenuItem>
-                        <MenuItem value={'Darshan'}>Darshan</MenuItem>
-                        <MenuItem value={'Srikanth'}>Srikanth</MenuItem>
+                        {
+                            this.state.departmentHeadOptions.map(name => <MenuItem key={name} value={name}>{name}</MenuItem>)
+                        }
                     </Select>
                 </FormControl>
 
@@ -246,11 +298,52 @@ class Departments extends React.Component {
                     fullWidth
                     style={{ marginTop: 32 }}
                     startIcon={this.state.editMode ? <Edit /> : <Add />}
+                    onClick={this.onCreateOrEditButtonPress}
                 >
                     {this.state.editMode ? 'Edit' : 'Create'}
                 </Button>
             </Drawer>
         );
+    }
+
+    async onCreateOrEditButtonPress() {
+        try {
+            let apiEndpoint = apiHost + '/departments/';
+            let payload = this.state.editableItem;
+            if (this.state.editMode) {
+                apiEndpoint += `${payload.id}/`;
+                let response = await axios.patch(apiEndpoint, payload);
+                response = response.data;
+            }
+            else {
+                let response = await axios.post(apiEndpoint, payload);
+                response = response.data;
+            }
+            this.setState({
+                drawerOpen: false,
+                editMode: false,
+                editableItem: {
+                    name: '',
+                    zone: '',
+                    head: '',
+                },
+            });
+            this.componentDidMount();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async onDeleteButtonPress(rowData) {
+        try {
+            let apiEndpoint = apiHost + '/departments/'+rowData.id+'/';
+            let response = await axios.delete(apiEndpoint);
+            response = response.data;
+            console.log(response);
+            this.componentDidMount();
+        } catch (error) {
+            console.log(error);
+        }
     }
 };
 

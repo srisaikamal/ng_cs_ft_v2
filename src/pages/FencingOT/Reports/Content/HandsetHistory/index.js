@@ -46,7 +46,7 @@ class HandsetHistory extends React.PureComponent {
                 <Timeline align="alternate">
                     <TimelineItem>
                         <TimelineOppositeContent>
-                            <Typography variant="body" color="textSecondary">
+                            <Typography variant="body1" color="textSecondary">
                                 <br />
                                 <b>July 1, 2020</b>
                             </Typography>
@@ -72,7 +72,7 @@ class HandsetHistory extends React.PureComponent {
 
                     <TimelineItem>
                         <TimelineOppositeContent>
-                            <Typography variant="body" color="textSecondary">
+                            <Typography variant="body1" color="textSecondary">
                                 <br />
                                 <b>July 5, 2020</b>
                             </Typography>
@@ -98,7 +98,7 @@ class HandsetHistory extends React.PureComponent {
 
                     <TimelineItem>
                         <TimelineOppositeContent>
-                            <Typography variant="body" color="textSecondary">
+                            <Typography variant="body1" color="textSecondary">
                                 <br />
                                 <b>July 10, 2020</b>
                             </Typography>
@@ -124,7 +124,7 @@ class HandsetHistory extends React.PureComponent {
 
                     <TimelineItem>
                         <TimelineOppositeContent>
-                            <Typography variant="body" color="textSecondary">
+                            <Typography variant="body1" color="textSecondary">
                                 <br />
                                 <b>July 22, 2020</b>
                             </Typography>

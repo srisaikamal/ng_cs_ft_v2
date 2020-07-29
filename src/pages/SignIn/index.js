@@ -118,7 +118,7 @@ class SignIn extends React.Component {
       window.location = '/landing';
       // console.log('[onSignInButtonPress] : ' + JSON.stringify(response));
     } catch (error) {
-      let errorMessage = JSON.stringify(error.response.data['error']);
+      let errorMessage = JSON.stringify(error.response);
       this.setState({ error: errorMessage });
     }
   }

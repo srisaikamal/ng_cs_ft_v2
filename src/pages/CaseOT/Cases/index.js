@@ -33,8 +33,9 @@ import {
 import { Autocomplete } from '@material-ui/lab';
 import MaterialTable from "material-table";
 import React, { forwardRef } from 'react';
+import axios from 'axios';
 // Local
-import { drawerWidth } from '../../../config';
+import { drawerWidth, apiHost } from '../../../config';
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -76,6 +77,11 @@ class Cases extends React.Component {
     constructor(props) {
         super(props);
         this.getDrawer = this.getDrawer.bind(this);
+        this.getCases = this.getCases.bind(this);
+        this.getAllAccounts = this.getAllAccounts.bind(this);
+        this.resetToDefault = this.resetToDefault.bind(this);
+        this.onCreateOrEditButtonPress = this.onCreateOrEditButtonPress.bind(this);
+        this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
     }
 
     state = {
@@ -88,47 +94,13 @@ class Cases extends React.Component {
             status: 'Open',
             createdAt: '',
             updatedAt: '',
-            users: [],
+            accounts: [],
             targets: [],
         },
-        tableData: [
-            {
-                id: 1,
-                name: 'Bomb blast at Place X',
-                description: 'Sample description',
-                category: 'Bomb Blast',
-                status: 'Open',
-                users: ['Abhishek', 'Darshan'],
-                targets: ['123456789', '987654321'],
-            },
-            {
-                id: 2,
-                name: 'Robbery at Place X',
-                description: 'Sample description',
-                category: 'Robbery',
-                status: 'Open',
-                users: ['Srikanth'],
-                targets: [],
-            },
-            {
-                id: 3,
-                name: 'Bomb blast at Place X',
-                description: 'Sample description',
-                category: 'Bomb Blast',
-                status: 'Close',
-                users: ['Abhishek', 'Darshan'],
-                targets: ['123456789', '987654321'],
-            },
-            {
-                id: 4,
-                name: 'Robbery at Place X',
-                description: 'Sample description',
-                category: 'Robbery',
-                status: 'Close',
-                users: ['Srikanth'],
-                targets: [],
-            },
-        ]
+        tableData: [],
+        accountObjects: [],
+        accountNameOptions: [],
+        accountIdNameLookupMap: {},
     }
 
     render() {
@@ -153,7 +125,7 @@ class Cases extends React.Component {
                                         status: 'Open',
                                         createdAt: '',
                                         updatedAt: '',
-                                        users: [],
+                                        accounts: [],
                                         targets: [],
                                     },
                                     editMode: false,
@@ -176,6 +148,7 @@ class Cases extends React.Component {
                             options={{
                                 actionsColumnIndex: -1,
                                 paging: false,
+                                grouping: true,
                             }}
                             columns={[
                                 { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
@@ -191,12 +164,13 @@ class Cases extends React.Component {
                                         </span>
                                 },
                                 {
-                                    title: "Users",
-                                    field: "users",
+                                    title: "accounts",
+                                    field: "accounts",
+                                    grouping: false,
                                     render: rowData =>
                                         <div>
                                             {
-                                                rowData.users.map((user, index) =>
+                                                rowData.accounts.map((user, index) =>
                                                     <Chip
                                                         key={index}
                                                         label={user}
@@ -209,6 +183,7 @@ class Cases extends React.Component {
                                 {
                                     title: "Targets",
                                     field: "targets",
+                                    grouping: false,
                                     render: rowData =>
                                         <div>
                                             {
@@ -231,7 +206,26 @@ class Cases extends React.Component {
                                     tooltip: 'Edit Case',
                                     onClick: (event, rowData) => {
                                         // Do edit operation
-                                        this.setState({ drawerOpen: true, editableItem: rowData, editMode: true });
+                                        let editableItem = Object.assign({}, rowData);
+                                        let selectedCaseAccountNames = editableItem['accounts'];
+                                        let accountsObjectsList = this.state.accountObjects;
+                                        let editableItemAccounts = [];
+
+                                        selectedCaseAccountNames.forEach(accountName => {
+                                            accountsObjectsList.forEach(accountObject => {
+                                                if (accountName === accountObject['name']) {
+                                                    editableItemAccounts.push(accountObject);
+                                                }
+                                            });
+                                        });
+
+                                        editableItem['accounts'] = editableItemAccounts;
+
+                                        this.setState({
+                                            drawerOpen: true,
+                                            editableItem: editableItem,
+                                            editMode: true
+                                        });
                                     },
                                 },
                                 {
@@ -239,6 +233,7 @@ class Cases extends React.Component {
                                     tooltip: 'Delete Case',
                                     onClick: (event, rowData) => {
                                         // Do Delete operation
+                                        this.onDeleteButtonPress(rowData);
                                     },
                                 }
                             ]}
@@ -263,20 +258,7 @@ class Cases extends React.Component {
                 }}
                 open={this.state.drawerOpen}
                 onClose={
-                    () => this.setState({
-                        drawerOpen: false,
-                        editMode: false,
-                        editableItem: {
-                            name: '',
-                            description: '',
-                            category: '',
-                            status: 'Open',
-                            createdAt: '',
-                            updatedAt: '',
-                            users: [],
-                            targets: [],
-                        },
-                    })
+                    () => this.resetToDefault()
                 }
             >
                 <Typography component='h5' variant='h5' style={{ marginBottom: 32 }}>
@@ -291,6 +273,7 @@ class Cases extends React.Component {
 
                 <TextField
                     label='Description'
+                    multiline
                     style={{ marginTop: 16 }}
                     value={this.state.editableItem.description}
                     onChange={event => this.setState({ editableItem: { ...this.state.editableItem, description: event.target.value } })}
@@ -308,50 +291,45 @@ class Cases extends React.Component {
                     </Select>
                 </FormControl>
 
-                <FormControl style={{ marginTop: 16 }}>
-                    <InputLabel id="status-label">Status</InputLabel>
-                    <Select
-                        labelId="status-label"
-                        value={this.state.editableItem.status}
-                        onChange={event => this.setState({ editableItem: { ...this.state.editableItem, status: event.target.value } })}
-                    >
-                        <MenuItem value={'Open'}>Open</MenuItem>
-                        <MenuItem value={'Close'}>Close</MenuItem>
-                        <MenuItem value={'Delayed'}>Delayed</MenuItem>
-                    </Select>
-                </FormControl>
+                {
+                    this.state.editMode &&
+                    <FormControl style={{ marginTop: 16 }}>
+                        <InputLabel id="status-label">Status</InputLabel>
+                        <Select
+                            labelId="status-label"
+                            value={this.state.editableItem.status}
+                            onChange={event => this.setState({ editableItem: { ...this.state.editableItem, status: event.target.value } })}
+                        >
+                            <MenuItem value={'Open'}>Open</MenuItem>
+                            <MenuItem value={'Close'}>Close</MenuItem>
+                            <MenuItem value={'Delayed'}>Delayed</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                }
 
                 <Autocomplete
                     style={{ marginTop: 16 }}
                     multiple
-                    options={['Abhishek', 'Darshan', 'Srikanth']}
-                    getOptionLabel={(option) => option}
-                    value={this.state.editableItem.users}
-                    onChange={(event, value) => this.setState({ editableItem: { ...this.state.editableItem, users: value } })}
+                    options={this.state.accountObjects}
+                    getOptionLabel={(option) => option['name']}
+                    value={this.state.editableItem.accounts}
+                    onChange={(event, value) => this.setState({ editableItem: { ...this.state.editableItem, accounts: value } })}
                     renderInput={(params) => (
                         <TextField
                             {...params}
                             variant="standard"
-                            label="Users"
+                            label="accounts"
                         />
                     )}
                 />
 
 
-                <Autocomplete
+                <TextField
                     style={{ marginTop: 16 }}
-                    multiple
-                    options={['123456789', '987654321']}
-                    getOptionLabel={(option) => option}
-                    value={this.state.editableItem.targets}
-                    onChange={(event, value) => this.setState({ editableItem: { ...this.state.editableItem, targets: value } })}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            variant="standard"
-                            label="Targets"
-                        />
-                    )}
+                    label='Targets'
+                    value={this.state.editableItem.targets.join(',')}
+                    onChange={event => this.setState({ editableItem: { ...this.state.editableItem, targets: event.target.value.split(',') } })}
                 />
 
 
@@ -361,11 +339,125 @@ class Cases extends React.Component {
                     fullWidth
                     style={{ marginTop: 32 }}
                     startIcon={this.state.editMode ? <Edit /> : <Add />}
+                    onClick={this.onCreateOrEditButtonPress}
                 >
                     {this.state.editMode ? 'Update' : 'Create'}
                 </Button>
             </Drawer>
         );
+    }
+
+    componentDidMount() {
+        this.getCases();
+    }
+
+    async getCases() {
+        try {
+            await this.getAllAccounts();
+            const apiEndpoint = apiHost + '/cases/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            response.forEach((caseItem, index) => {
+                let accountsForCase = caseItem['accounts'];
+                let accountNamesForCase = [];
+                accountsForCase.forEach(accountId => {
+                    accountNamesForCase.push(this.state.accountIdNameLookupMap[accountId]);
+                });
+                response[index]['accounts'] = accountNamesForCase;
+            });
+            this.setState({ tableData: response });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async getAllAccounts() {
+        try {
+            const apiEndpoint = apiHost + '/accounts/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+
+            let accountNameOptions = new Set();
+            let accountIdNameLookupMap = {};
+            let accountObjects = [];
+
+            response.forEach(account => {
+                let accountId = account['id'];
+                let accountName = account['name'];
+                accountNameOptions.add(accountName);
+                accountIdNameLookupMap[accountId] = accountName;
+                accountObjects.push(account);
+            });
+
+            accountNameOptions = Array.from(accountNameOptions);
+
+            this.setState({
+                accountNameOptions: accountNameOptions,
+                accountIdNameLookupMap: accountIdNameLookupMap,
+                accountObjects: accountObjects,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    resetToDefault() {
+        this.setState({
+            drawerOpen: false,
+            editMode: false,
+            editableItem: {
+                name: '',
+                description: '',
+                category: '',
+                status: 'Open',
+                createdAt: '',
+                updatedAt: '',
+                accounts: [],
+                targets: [],
+            },
+        });
+    }
+
+    async onCreateOrEditButtonPress() {
+        try {
+            let apiEndpoint = apiHost + '/cases/';
+            let payload = this.state.editableItem;
+            let accountsIds = [];
+            console.log(payload);
+            payload.accounts.forEach(account => {
+                accountsIds.push(account['id']);
+            });
+            payload.accounts = accountsIds;
+
+            if (this.state.editMode) {
+                apiEndpoint += `${payload.id}/`;
+                let response = await axios.put(apiEndpoint, payload);
+                response = response.data;
+                console.log(response);
+            }
+            else {
+                let response = await axios.post(apiEndpoint, payload);
+                response = response.data;
+                console.log(response);
+            }
+            this.resetToDefault();
+            this.componentDidMount();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async onDeleteButtonPress(rowData) {
+        try {
+            let apiEndpoint = apiHost + '/cases/' + rowData.id + '/';
+            let response = await axios.delete(apiEndpoint);
+            response = response.data;
+            console.log(response);
+            this.resetToDefault();
+            this.componentDidMount();
+        } catch (error) {
+            console.log(error);
+        }
     }
 };
 

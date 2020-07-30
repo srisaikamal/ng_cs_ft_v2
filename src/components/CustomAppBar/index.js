@@ -5,6 +5,7 @@ import {
     Typography,
     withStyles
 } from '@material-ui/core';
+import axios from "axios";
 import React from 'react';
 
 const styles = (theme) => ({
@@ -39,7 +40,15 @@ class CustomAppBar extends React.PureComponent {
                         <b>{title}</b>
                     </Typography>
 
-                    <IconButton onClick={onTrailingIconPress} edge="start" color="inherit">
+                    <IconButton
+                        onClick={() => {
+                            localStorage.removeItem('current_account');
+                            delete axios.defaults.headers.common['Authorization'];
+                            window.location = '/';
+                        }}
+                        edge="start"
+                        color="inherit"
+                    >
                         {trailingIcon}
                     </IconButton>
                 </Toolbar>

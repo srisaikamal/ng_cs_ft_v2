@@ -126,7 +126,7 @@ class DataTable extends React.PureComponent {
                         exportButton: true,
                         paging: true,
                         filtering: true,
-                        search: false,
+                        search: true,
                     }}
                     columns={convertObjectKeyToTableColumnObject(selectedColumns, selectedJobCdrList)}
                     title={title}

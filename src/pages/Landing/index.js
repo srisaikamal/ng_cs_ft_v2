@@ -101,17 +101,22 @@ class Landing extends React.Component {
                 </ButtonGroup>
 
                 <Grid spacing={4} container justify='center' className={classes.buttonGrid}>
-                    <Grid item md={4}>
-                        {currentAccount['designation'] === 'Admin' && this.getCard('Admin OT', 'View, Add or Delete users', () => window.location = '/admin')}
-                    </Grid>
+                    {
+                        currentAccount['designation'] === 'Admin' &&
+                        <Grid item md={4}>
+                            {this.getCard('Admin OT', 'View, Add or Delete users', () => window.location = '/admin')}
+                        </Grid>
+                    }
+
+                    {
+                        (currentAccount['designation'] === 'Admin' || currentAccount['designation'] === 'Supervisor') &&
+                        <Grid item md={4}>
+                            {this.getCard('Case OT', 'View, Add or Delete cases', () => window.location = '/case')}
+                        </Grid>
+                    }
 
                     <Grid item md={4}>
-                        {this.getCard('Case OT', 'View, Add or Delete cases', () => window.location = '/case')}
-
-                    </Grid>
-
-                    <Grid item md={4}>
-                        {(currentAccount['designation'] === 'Admin' || currentAccount['designation'] === 'Supervisor') && this.getCard('Check OT', 'Description for Check OT', () => window.location = '/check')}
+                        {this.getCard('Check OT', 'Description for Check OT', () => window.location = '/check')}
                     </Grid>
 
                     <Grid item md={4}>

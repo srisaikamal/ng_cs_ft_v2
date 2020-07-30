@@ -30,6 +30,7 @@ import {
     ViewColumn
 } from '@material-ui/icons';
 import { Autocomplete } from '@material-ui/lab';
+import moment from 'moment';
 import MaterialTable from "material-table";
 import MomentUtils from "@date-io/moment";
 import {
@@ -374,8 +375,18 @@ class Jobs extends React.Component {
                                 {rowData.status}
                             </span>
                     },
-                    { title: "Start Time", field: "startTime", align: "center" },
-                    { title: "End Time", field: "endTime", align: "center" }
+                    {
+                        title: "Start Time",
+                        field: "startTime",
+                        align: "center",
+                        render: rowData => moment(rowData['startTime']).format('L'),
+                    },
+                    {
+                        title: "End Time",
+                        field: "endTime",
+                        align: "center",
+                        render: rowData => moment(rowData['endTime']).format('L'),
+                    },
                 ]}
                 data={this.state.selectedCaseJobsList}
                 title='Jobs List'
@@ -452,7 +463,6 @@ class Jobs extends React.Component {
             response.every((caseItem, index) => {
                 let caseName = caseItem['name'];
                 if (caseName === 'DEFAULT_CASE_CHECK_OT') {
-                    console.log(caseItem);
                     this.setState({ selectedCase: caseItem });
                     this.fetchJobsForCase(caseItem);
                     return false;
@@ -496,11 +506,9 @@ class Jobs extends React.Component {
             payload['startTime'] = payload['startTime'].valueOf();
             payload['endTime'] = payload['endTime'].valueOf();
             payload['case'] = this.state.selectedCase['id'];
-            console.log(payload);
 
             let response = await axios.post(apiEndpoint, payload);
             response = response.data;
-            console.log(response);
             this.resetToDefault();
             this.fetchJobsForCase(this.state.selectedCase);
         } catch (error) {

@@ -34,6 +34,7 @@ import {
 import React, { forwardRef } from 'react';
 import MaterialTable from "material-table";
 import axios from "axios";
+import moment from "moment";
 // Local
 import { drawerWidth, apiHost } from '../../../config';
 
@@ -91,6 +92,7 @@ class Reports extends React.Component {
         this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
         this.getDefaultCase = this.getDefaultCase.bind(this);
         this.fetchJobsForCase = this.fetchJobsForCase.bind(this);
+        this.fetchCdrForJob = this.fetchCdrForJob.bind(this);
     }
 
     state = {
@@ -99,6 +101,7 @@ class Reports extends React.Component {
         activeWidget: 'Handset',
         selectedCaseJobsList: [],
         selectedJob: null,
+        selectedJobCdrList: [],
         newJob: {
             id: -1,
             case: -1,
@@ -154,6 +157,7 @@ class Reports extends React.Component {
             default:
                 return <DataTableContent
                     selectedJob={this.state.selectedJob}
+                    selectedJobCdrList={this.state.selectedJobCdrList}
                     selectedColumns={this.state.dataTableSelectedColumns}
                 />;
         }
@@ -231,15 +235,14 @@ class Reports extends React.Component {
                 }}
                 options={{
                     grouping: false,
-                    exportButton: true,
+                    exportButton: false,
                     paging: true,
-                    actionsColumnIndex: -1,
                     rowStyle: rowData => ({
                         backgroundColor: (this.state.selectedJob.id === rowData.id) ? '#EEE' : '#FFF'
                     })
                 }}
                 columns={[
-                    { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
+                    { title: "ID", field: "id", type: "numeric", align: "left", width: 8 },
                     { title: "Category", field: "category" },
                     {
                         title: "Query",
@@ -268,29 +271,21 @@ class Reports extends React.Component {
                         }
                     },
                     {
-                        title: "Status",
-                        field: "status",
-                        render: rowData =>
-                            <span style={{ color: rowData.status === 'PENDING' ? 'red' : 'green' }}>
-                                {rowData.status}
-                            </span>
+                        title: "Start Time",
+                        field: "startTime",
+                        align: "center",
+                        render: rowData => moment(rowData['startTime']).format('L'),
                     },
-                    { title: "Start Time", field: "startTime", align: "center" },
-                    { title: "End Time", field: "endTime", align: "center" }
+                    {
+                        title: "End Time",
+                        field: "endTime",
+                        align: "center",
+                        render: rowData => moment(rowData['endTime']).format('L'),
+                    },
                 ]}
                 data={this.state.selectedCaseJobsList}
                 title=''
-                actions={[
-                    {
-                        icon: () => <Delete color='error' />,
-                        tooltip: 'Delete Job',
-                        onClick: (event, rowData) => {
-                            // Do Delete operation
-                            this.onDeleteButtonPress(rowData);
-                        },
-                    }
-                ]}
-                onRowClick={(event, selectedRow) => this.setState({ selectedJob: selectedRow })}
+                onRowClick={(event, selectedRow) => this.fetchCdrForJob(selectedRow)}
             />
         );
     }
@@ -454,7 +449,6 @@ class Reports extends React.Component {
             response.every((caseItem, index) => {
                 let caseName = caseItem['name'];
                 if (caseName === 'DEFAULT_CASE_CHECK_OT') {
-                    console.log(caseItem);
                     this.setState({ selectedCase: caseItem });
                     this.fetchJobsForCase(caseItem);
                     return false;
@@ -490,6 +484,33 @@ class Reports extends React.Component {
             response = response.data;
             this.resetToDefault();
             this.fetchJobsForCase(this.state.selectedCase);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async fetchCdrForJob(selectedJob) {
+        this.setState({ selectedJob: selectedJob });
+        let selectedJobCdrList = [];
+        try {
+            let apiEndpoint = apiHost + '/cdr/?job=' + selectedJob.id;
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            let currentPage = response['current'];
+            let totalPages = response['total_pages'];
+            let results = response['results'];
+            selectedJobCdrList = selectedJobCdrList.concat(results);
+            if (currentPage < totalPages) {
+                for (let i = currentPage + 1; i <= totalPages; i++) {
+                    apiEndpoint = `${apiHost}/cdr/?job=${selectedJob.id}&page=${i}`;
+                    response = await axios.get(apiEndpoint);
+                    response = response.data;
+                    results = response['results'];
+                    selectedJobCdrList = selectedJobCdrList.concat(results);
+                }
+            }
+            console.log(selectedJobCdrList, selectedJobCdrList.length);
+            this.setState({ selectedJobCdrList: selectedJobCdrList });
         } catch (error) {
             console.log(error);
         }

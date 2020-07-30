@@ -18,6 +18,7 @@ import {
 } from '@material-ui/icons';
 import MaterialTable from "material-table";
 import React, { forwardRef } from 'react';
+import moment from 'moment';
 // Local
 import {
     apiHost,
@@ -51,19 +52,28 @@ const styles = theme => ({
 
 function convertObjectKeyToTableColumnObject(arr, tableData) {
     let resultsArr = [];
-    arr.forEach(element => {
-        let lookUpMap = {};
+    arr.forEach(columnName => {
+        let lookUpMap = {}
 
         tableData.forEach(row => {
-            let columnVal = row[element];
-            lookUpMap[columnVal] = columnVal;
+            let val = row[columnName];
+            lookUpMap[val] = val;
         });
 
         let obj = {
-            field: element,
-            title: element,
+            field: columnName,
+            title: columnName,
             lookup: lookUpMap,
             headerStyle: {
+                backgroundColor: colors.orange[500],
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: 18,
+            }
+        }
+
+        if (columnName === 'id') {
+            obj['cellStyle'] = {
                 backgroundColor: colors.orange[500],
                 color: 'white',
                 fontWeight: 'bold',
@@ -84,8 +94,25 @@ class DataTable extends React.PureComponent {
     render() {
         const {
             classes,
+            selectedJob,
+            selectedJobCdrList,
             selectedColumns,
         } = this.props;
+
+        let title = `${selectedJob['category']} `;
+        if (selectedJob['category'] === 'Location') {
+            let valuesArr = selectedJob['query'].split(',');
+            let tempString = `Lat: ${valuesArr[0]}, Long: ${valuesArr[1]}, Dist: ${valuesArr[2]}`;
+            title += tempString;
+        }
+        else if (selectedJob['category'] === 'LAC/Cell-ID') {
+            let valuesArr = selectedJob['query'].split(',');
+            let tempString = `LAC: ${valuesArr[0]}, Cell-ID: ${valuesArr[1]}, Dist: ${valuesArr[2]}`;
+            title += tempString;
+        }
+        else {
+            title += selectedJob['query'];
+        }
 
         return (
             <div>
@@ -101,25 +128,9 @@ class DataTable extends React.PureComponent {
                         filtering: true,
                         search: false,
                     }}
-                    columns={convertObjectKeyToTableColumnObject(selectedColumns, this.state.tableData)}
-                    title='Call Detail Records'
-                    data={query =>
-                        new Promise((resolve, reject) => {
-                            let url = apiHost + '/cdr/?';
-                            url += 'page_size=' + query.pageSize;
-                            url += '&page=' + (query.page + 1);
-                            fetch(url)
-                                .then(response => response.json())
-                                .then(result => {
-                                    this.setState({ tableData: result.results });
-                                    resolve({
-                                        data: result.results,
-                                        page: result.current - 1,
-                                        totalCount: result.total_records,
-                                    });
-                                })
-                        })
-                    }
+                    columns={convertObjectKeyToTableColumnObject(selectedColumns, selectedJobCdrList)}
+                    title={title}
+                    data={selectedJobCdrList}
                 />
             </div>
         );

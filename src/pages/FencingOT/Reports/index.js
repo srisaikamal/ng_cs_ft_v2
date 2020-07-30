@@ -33,9 +33,10 @@ import {
 } from '@material-ui/icons';
 import React, { forwardRef } from 'react';
 import MaterialTable from "material-table";
+import axios from "axios";
+import moment from "moment";
 // Local
-import sampleData from './sampledata.json';
-import { drawerWidth } from '../../../config';
+import { drawerWidth, apiHost } from '../../../config';
 
 import DataMapContent from './Content/DataMap';
 import DataTableContent from './Content/DataTable';
@@ -86,73 +87,36 @@ class Reports extends React.Component {
         this.getMainContent = this.getMainContent.bind(this);
         this.getLeftDrawer = this.getLeftDrawer.bind(this);
         this.getRightDrawer = this.getRightDrawer.bind(this);
-        this.getCaseMetadataComponent = this.getCaseMetadataComponent.bind(this);
         this.getJobsTableComponent = this.getJobsTableComponent.bind(this);
         this.getWidgetsListComponent = this.getWidgetsListComponent.bind(this);
+        this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
+        this.fetchJobsForCase = this.fetchJobsForCase.bind(this);
+        this.fetchCdrForJob = this.fetchCdrForJob.bind(this);
     }
 
     state = {
         leftDrawerOpen: true,
         rightDrawerOpen: true,
         activeWidget: 'Handset',
-        selectedCaseJobsList: [
-            {
-                id: 1,
-                case: 1,
-                serverJobId: -1,
-                status: 'Pending',
-                category: 'IMSI',
-                query: '123456789',
-                eventStartDate: 'July 1, 2020',
-                eventEndDate: 'July 3, 2020',
-            },
-            {
-                id: 2,
-                case: 1,
-                serverJobId: -1,
-                status: 'Completed',
-                category: 'MSISDN',
-                query: '123456789',
-                eventStartDate: 'Feb 1, 2020',
-                eventEndDate: 'Mar 3, 2020',
-            },
-            {
-                id: 3,
-                case: 1,
-                serverJobId: -1,
-                status: 'Pending',
-                category: 'Cell Site',
-                query: '123456789',
-                eventStartDate: 'Jan 1, 2020',
-                eventEndDate: 'June 3, 2020',
-            },
-            {
-                id: 4,
-                case: 1,
-                serverJobId: -1,
-                status: 'Completed',
-                category: 'IMEI',
-                query: '123456789',
-                eventStartDate: 'Apr 1, 2020',
-                eventEndDate: 'May 3, 2020',
-            },
-            {
-                id: 5,
-                case: 1,
-                serverJobId: -1,
-                status: 'Pending',
-                category: 'IMSI',
-                query: '123456789',
-                eventStartDate: 'Jan 1, 2020',
-                eventEndDate: 'Jun 3, 2020',
-            }
-        ],
+        selectedCaseJobsList: [],
+        selectedJob: null,
+        selectedJobCdrList: [],
         newJob: {
+            id: -1,
+            case: -1,
             category: 'IMSI',
-            eventStartDate: '',
-            eventEndDate: '',
+            status: '',
+            latitude: -1,
+            longitude: -1,
+            distance: -1,
+            lac: -1,
+            cellId: -1,
+            startTime: new Date(),
+            endTime: new Date(),
+            query: '',
         },
-        dataTableSelectedColumns: Object.keys(sampleData['results'][0]).slice(0, 5),
+        dataTableSelectedColumns: ['id', 'callingnumber', 'callednumber'],
+        allCdrColumns: [],
     }
 
     render() {
@@ -191,7 +155,8 @@ class Reports extends React.Component {
                 return <LinkTreeContent />;
             default:
                 return <DataTableContent
-                    tableData={sampleData['results']}
+                    selectedJob={this.state.selectedJob}
+                    selectedJobCdrList={this.state.selectedJobCdrList}
                     selectedColumns={this.state.dataTableSelectedColumns}
                 />;
         }
@@ -217,18 +182,6 @@ class Reports extends React.Component {
                             {leftDrawerOpen ? <ChevronLeft /> : <ChevronRight />}
                         </IconButton>
                     </div>
-
-                    {
-                        leftDrawerOpen ?
-                            <div style={{ padding: 16 }}>
-                                <Typography component='h5' variant='h5' style={{ marginBottom: 32 }}>
-                                    <b>Selected Case Summary</b>
-                                </Typography>
-                                {this.getCaseMetadataComponent()}
-                            </div>
-                            : <div />
-                    }
-
                     {
                         leftDrawerOpen ?
                             <div style={{ padding: 8 }}>
@@ -267,73 +220,6 @@ class Reports extends React.Component {
         );
     }
 
-    getCaseMetadataComponent() {
-        const {
-            classes,
-            selectedCase,
-        } = this.props;
-
-        return (
-            <div>
-                <b>ID: </b>
-                {selectedCase.id}
-                <br />
-
-                <b>Name: </b>
-                {selectedCase.name}
-                <br />
-
-                <b>Description: </b>
-                {selectedCase.description}
-                <br />
-
-                <b>Category: </b>
-                {selectedCase.category}
-                <br />
-
-                <b>Status: </b>
-                {
-                    <span style={{ color: selectedCase.status === 'Open' ? 'green' : 'red' }}>
-                        {selectedCase.status}
-                    </span>
-                }
-                <br />
-
-                <div style={{ marginTop: 16 }} />
-
-                <b>Users: </b>
-                {
-                    selectedCase ?
-                        selectedCase.users.map((user, index) =>
-                            <Chip
-                                key={index}
-                                label={user}
-                                className={classes.chip}
-                            />
-                        )
-                        : ''
-                }
-                <br />
-
-                <b>Targets: </b>
-                {
-                    selectedCase ?
-                        selectedCase.targets.map((target, index) =>
-                            <Chip
-                                key={index}
-                                label={target}
-                                className={classes.chip}
-                            />
-                        )
-                        : ''
-                }
-                <br />
-
-            </div>
-        );
-    }
-
-
     getJobsTableComponent() {
         const {
             classes
@@ -342,39 +228,63 @@ class Reports extends React.Component {
         return (
             <MaterialTable
                 icons={tableIcons}
+                style={{ marginTop: 32, marginRight: 16 }}
                 components={{
                     Container: props => <Paper {...props} elevation={0} />
                 }}
                 options={{
-                    paging: false,
+                    grouping: false,
+                    exportButton: false,
+                    paging: true,
+                    rowStyle: rowData => ({
+                        backgroundColor: (this.state.selectedJob.id === rowData.id) ? '#EEE' : '#FFF'
+                    })
                 }}
                 columns={[
-                    // { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
+                    { title: "ID", field: "id", type: "numeric", align: "left", width: 8 },
                     { title: "Category", field: "category" },
-                    { title: "Query", field: "query" },
                     {
-                        title: "Status",
-                        field: "status",
-                        render: rowData =>
-                            <span style={{ color: rowData.status === 'Pending' ? 'green' : 'red' }}>
-                                {rowData.status}
-                            </span>
+                        title: "Query",
+                        field: "query",
+                        render: rowData => {
+                            let jobCategory = rowData['category'];
+                            let resultantHtmlElement = null;
+                            if (jobCategory === 'Location') {
+                                let queryArr = rowData['query'].split(',');
+                                resultantHtmlElement = <span>
+                                    <b>Latitude: </b>{queryArr[0]}<br />
+                                    <b>Longitude: </b>{queryArr[1]}<br />
+                                    <b>Distance: </b>{queryArr[2]}<br />
+                                </span>;
+                            }
+                            else if (jobCategory === 'LAC/Cell-ID') {
+                                let queryArr = rowData['query'].split(',');
+                                resultantHtmlElement = <span>
+                                    <b>LAC: </b>{queryArr[0]}<br />
+                                    <b>Cell-ID: </b>{queryArr[1]}<br />
+                                    <b>Distance: </b>{queryArr[2]}<br />
+                                </span>;
+                            }
+                            else resultantHtmlElement = rowData['query'];
+                            return resultantHtmlElement;
+                        }
                     },
-                    // { title: "Query Start Date", field: "eventStartDate", align: "center" },
-                    // { title: "Query End Date", field: "eventEndDate", align: "center" }
+                    {
+                        title: "Start Time",
+                        field: "startTime",
+                        align: "center",
+                        render: rowData => moment(rowData['startTime']).format('L'),
+                    },
+                    {
+                        title: "End Time",
+                        field: "endTime",
+                        align: "center",
+                        render: rowData => moment(rowData['endTime']).format('L'),
+                    },
                 ]}
                 data={this.state.selectedCaseJobsList}
                 title=''
-                actions={[
-                    {
-                        icon: () => <AddBox color='action' />,
-                        tooltip: 'Add Job',
-                        isFreeAction: true,
-                        onClick: (event, rowData) => {
-                            // Do Delete operation
-                        },
-                    }
-                ]}
+                onRowClick={(event, selectedRow) => this.fetchCdrForJob(selectedRow)}
             />
         );
     }
@@ -428,7 +338,7 @@ class Reports extends React.Component {
                                 {
                                     this.state.activeWidget === 'Table' ?
                                         <DataTableQuery
-                                            allColumns={Object.keys(sampleData['results'][0])}
+                                            allColumns={this.state.allCdrColumns}
                                             selectedColumns={this.state.dataTableSelectedColumns}
                                             onChange={(event, newVal) => this.setState({ dataTableSelectedColumns: newVal })}
                                         /> :
@@ -512,6 +422,81 @@ class Reports extends React.Component {
                 </Grid>
             </Grid>
         );
+    }
+
+    async componentDidMount() {
+        const {
+            selectedCase
+        } = this.props;
+
+        await this.getAllCdrColumns();
+        await this.fetchJobsForCase(selectedCase);
+        await this.fetchCdrForJob(this.state.selectedJob);
+    }
+
+    async getAllCdrColumns() {
+        try {
+            const apiEndpoint = apiHost + '/cdr/columns/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            this.setState({ allCdrColumns: response });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async fetchJobsForCase(selectedCase) {
+        try {
+            const apiEndpoint = apiHost + '/jobs/?case=' + selectedCase.id;
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            response = response.filter((jobItem, index) => jobItem['status'] === 'FINISHED');
+            this.setState({
+                selectedCaseJobsList: response,
+                selectedJob: response[0],
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
+    async onDeleteButtonPress(rowData) {
+        try {
+            const apiEndpoint = apiHost + '/jobs/' + rowData.id + '/';
+            let response = await axios.delete(apiEndpoint);
+            response = response.data;
+            this.resetToDefault();
+            this.fetchJobsForCase(this.props.selectedCase);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async fetchCdrForJob(selectedJob) {
+        this.setState({ selectedJob: selectedJob });
+        let selectedJobCdrList = [];
+        try {
+            let apiEndpoint = apiHost + '/cdr/?job=' + selectedJob.id;
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            let currentPage = response['current'];
+            let totalPages = response['total_pages'];
+            let results = response['results'];
+            selectedJobCdrList = selectedJobCdrList.concat(results);
+            if (currentPage < totalPages) {
+                for (let i = currentPage + 1; i <= totalPages; i++) {
+                    apiEndpoint = `${apiHost}/cdr/?job=${selectedJob.id}&page=${i}`;
+                    response = await axios.get(apiEndpoint);
+                    response = response.data;
+                    results = response['results'];
+                    selectedJobCdrList = selectedJobCdrList.concat(results);
+                }
+            }
+            this.setState({ selectedJobCdrList: selectedJobCdrList });
+        } catch (error) {
+            console.log(error);
+        }
     }
 };
 

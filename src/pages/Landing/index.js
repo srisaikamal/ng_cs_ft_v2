@@ -14,6 +14,7 @@ import {
 import {
     ExitToApp
 } from '@material-ui/icons';
+import axios from 'axios';
 import React from 'react';
 import CustomAppBar from '../../components/CustomAppBar';
 
@@ -35,6 +36,9 @@ const styles = (theme) => ({
         marginTop: window.innerHeight / 5
     }
 });
+
+let currentAccount = JSON.parse(localStorage.getItem('current_account'));
+
 class Landing extends React.Component {
     constructor(props) {
         super(props);
@@ -52,7 +56,11 @@ class Landing extends React.Component {
                 <CustomAppBar
                     title='Nigeria Case Study'
                     trailingIcon={<ExitToApp />}
-                    onTrailingIconPress={() => window.location='/'}
+                    onTrailingIconPress={() => {
+                        localStorage.removeItem('current_account');
+                        delete axios.defaults.headers.common['Authorization'];
+                        window.location = '/';
+                    }}
                 />
                 {this.getContent()}
             </div>
@@ -69,7 +77,7 @@ class Landing extends React.Component {
                 <Toolbar>
                     <Typography variant="h6" className={classes.title}>
                         Nigeria Case Study
-                </Typography>
+                    </Typography>
 
                     <IconButton edge="start" color="inherit">
                         <ExitToApp />
@@ -94,20 +102,20 @@ class Landing extends React.Component {
 
                 <Grid spacing={4} container justify='center' className={classes.buttonGrid}>
                     <Grid item md={4}>
-                        {this.getCard('Admin OT', 'View, Add or Delete users', () => window.location='/admin')}
+                        {currentAccount['designation'] === 'Admin' && this.getCard('Admin OT', 'View, Add or Delete users', () => window.location = '/admin')}
                     </Grid>
 
                     <Grid item md={4}>
-                        {this.getCard('Case OT', 'View, Add or Delete cases', () => window.location='/case')}
+                        {this.getCard('Case OT', 'View, Add or Delete cases', () => window.location = '/case')}
 
                     </Grid>
 
                     <Grid item md={4}>
-                        {this.getCard('Check OT', 'Description for Check OT', () => window.location='/check')}
+                        {(currentAccount['designation'] === 'Admin' || currentAccount['designation'] === 'Supervisor') && this.getCard('Check OT', 'Description for Check OT', () => window.location = '/check')}
                     </Grid>
 
                     <Grid item md={4}>
-                        {this.getCard('Fencing OT', 'Description for Fencing OT', () => window.location='/fence')}
+                        {this.getCard('Fencing OT', 'Description for Fencing OT', () => window.location = '/fence')}
                     </Grid>
 
                     <Grid item md={4}>

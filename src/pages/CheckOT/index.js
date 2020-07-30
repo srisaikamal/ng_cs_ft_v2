@@ -58,9 +58,6 @@ class CheckOT extends React.Component {
         const {
             classes
         } = this.props;
-        let jobsTabTitle = 'Jobs';
-        if (this.state.selectedJob.id !== -1) jobsTabTitle += ` <${this.state.selectedJob.category}>`;
-
 
         return (
             <div>
@@ -78,8 +75,8 @@ class CheckOT extends React.Component {
                     value={this.state.activeTab}
                     onChange={(event, newVal) => this.setState({ activeTab: newVal })}
                 >
-                    <Tab label={<b style={{ color: 'white' }}>{jobsTabTitle}</b>} value='Jobs' />
-                    {this.state.selectedJob.id !== -1 ? <Tab label={<b style={{ color: 'white' }}>Reports</b>} value='Reports' /> : <div />}
+                    <Tab label={<b style={{ color: 'white' }}>Jobs</b>} value='Jobs' />
+                    <Tab label={<b style={{ color: 'white' }}>Reports</b>} value='Reports' />
                 </Tabs>
             </div>
         );
@@ -89,14 +86,11 @@ class CheckOT extends React.Component {
         switch (this.state.activeTab) {
             case 'Jobs':
                 return <Jobs
-                    selectedCase={this.state.selectedCase}
                     selectedJob={this.state.selectedJob}
                     onRowSelect={(event, selectedRow) => this.setState({ selectedJob: selectedRow })}
                 />;
             default:
-                return <Reports
-                    selectedCase={this.state.selectedCase}
-                />;
+                return <Reports />;
         }
     }
 };

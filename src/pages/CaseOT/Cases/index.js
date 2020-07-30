@@ -357,6 +357,7 @@ class Cases extends React.Component {
             const apiEndpoint = apiHost + '/cases/';
             let response = await axios.get(apiEndpoint);
             response = response.data;
+            response = response.filter((caseItem, index) => caseItem['name'] !== 'DEFAULT_CASE_CHECK_OT');
             response.forEach((caseItem, index) => {
                 let accountsForCase = caseItem['accounts'];
                 let accountNamesForCase = [];

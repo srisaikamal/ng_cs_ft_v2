@@ -31,9 +31,15 @@ import {
 } from '@material-ui/icons';
 import { Autocomplete } from '@material-ui/lab';
 import MaterialTable from "material-table";
+import MomentUtils from "@date-io/moment";
+import {
+    MuiPickersUtilsProvider,
+    KeyboardDatePicker,
+} from '@material-ui/pickers';
+import axios from 'axios';
 import React, { forwardRef } from 'react';
 // Local
-import { drawerWidth } from '../../../config';
+import { drawerWidth, apiHost } from '../../../config';
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -78,64 +84,34 @@ class CaseIntel extends React.Component {
         this.getCaseSelectionComponent = this.getCaseSelectionComponent.bind(this);
         this.getCaseMetadataComponent = this.getCaseMetadataComponent.bind(this);
         this.getJobsTableComponent = this.getJobsTableComponent.bind(this);
+        this.getAllCases = this.getAllCases.bind(this);
+        this.resetToDefault = this.resetToDefault.bind(this);
+        this.getAllAccounts = this.getAllAccounts.bind(this);
+        this.fetchJobsForCase = this.fetchJobsForCase.bind(this);
+        this.onCreateJobButtonPress = this.onCreateJobButtonPress.bind(this);
+        this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
     }
 
     state = {
         drawerOpen: false,
         editMode: false,
         selectedCase: null,
+        accountIdNameLookupMap: {},
         cases: [],
-        selectedCaseJobsList: [
-            {
-                id: 1,
-                case: 1,
-                serverJobId: -1,
-                status: 'Pending',
-                category: 'IMSI',
-                eventStartDate: 'July 1, 2020',
-                eventEndDate: 'July 3, 2020',
-            },
-            {
-                id: 2,
-                case: 1,
-                serverJobId: -1,
-                status: 'Completed',
-                category: 'MSISDN',
-                eventStartDate: 'Feb 1, 2020',
-                eventEndDate: 'Mar 3, 2020',
-            },
-            {
-                id: 3,
-                case: 1,
-                serverJobId: -1,
-                status: 'Pending',
-                category: 'Cell Site',
-                eventStartDate: 'Jan 1, 2020',
-                eventEndDate: 'June 3, 2020',
-            },
-            {
-                id: 4,
-                case: 1,
-                serverJobId: -1,
-                status: 'Completed',
-                category: 'IMEI',
-                eventStartDate: 'Apr 1, 2020',
-                eventEndDate: 'May 3, 2020',
-            },
-            {
-                id: 5,
-                case: 1,
-                serverJobId: -1,
-                status: 'Pending',
-                category: 'IMSI',
-                eventStartDate: 'Jan 1, 2020',
-                eventEndDate: 'Jun 3, 2020',
-            }
-        ],
+        selectedCaseJobsList: [],
         newJob: {
+            id: -1,
+            case: -1,
             category: 'IMSI',
-            eventStartDate: '',
-            eventEndDate: '',
+            status: '',
+            latitude: -1,
+            longitude: -1,
+            distance: -1,
+            lac: -1,
+            cellId: -1,
+            startTime: new Date(),
+            endTime: new Date(),
+            query: '',
         }
     }
 
@@ -145,8 +121,8 @@ class CaseIntel extends React.Component {
         } = this.props;
 
         return (
-            <div style={{paddingBottom: 32}}>
-                {this.getDrawer()}
+            <div style={{ paddingBottom: 32 }}>
+                {this.state.selectedCase && this.getDrawer()}
 
                 {this.getCaseSelectionComponent()}
 
@@ -197,17 +173,7 @@ class CaseIntel extends React.Component {
                     paper: classes.drawerPaper,
                 }}
                 open={this.state.drawerOpen}
-                onClose={
-                    () => this.setState({
-                        drawerOpen: false,
-                        editMode: false,
-                        newJob: {
-                            category: 'IMSI',
-                            eventStartDate: '',
-                            eventEndDate: '',
-                        }
-                    })
-                }
+                onClose={this.resetToDefault}
             >
 
                 <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
@@ -224,31 +190,126 @@ class CaseIntel extends React.Component {
                         <MenuItem value={'IMSI'}>IMSI</MenuItem>
                         <MenuItem value={'IMEI'}>IMEI</MenuItem>
                         <MenuItem value={'MSISDN'}>MSISDN</MenuItem>
-                        <MenuItem value={'Cell Site'}>Cell Site</MenuItem>
+                        <MenuItem value={'Location'}>Location</MenuItem>
+                        <MenuItem value={'LAC/Cell-ID'} >LAC/Cell-ID</MenuItem>
                     </Select>
                 </FormControl>
 
-                <TextField
-                    style={{ marginTop: 16 }}
-                    label="Query Start Date"
-                    type="date"
-                    value={this.state.newJob.eventStartDate}
-                    onChange={event => this.setState({ newJob: { ...this.state.newJob, eventStartDate: event.target.value } })}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
+                <MuiPickersUtilsProvider utils={MomentUtils}>
+                    <KeyboardDatePicker
+                        style={{ marginTop: 16 }}
+                        disableToolbar
+                        variant="inline"
+                        margin="normal"
+                        format="DD/MM/yyyy"
+                        openTo="year"
+                        label="Query Start Date"
+                        value={this.state.newJob.startTime}
+                        onChange={newDate => this.setState({ newJob: { ...this.state.newJob, startTime: newDate } })}
+                    />
+                </MuiPickersUtilsProvider>
 
-                <TextField
-                    style={{ marginTop: 16 }}
-                    label="Query End Date"
-                    type="date"
-                    value={this.state.newJob.eventEndDate}
-                    onChange={event => this.setState({ newJob: { ...this.state.newJob, eventEndDate: event.target.value } })}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
+                <MuiPickersUtilsProvider utils={MomentUtils}>
+                    <KeyboardDatePicker
+                        style={{ marginTop: 16 }}
+                        disableToolbar
+                        variant="inline"
+                        margin="normal"
+                        openTo="year"
+                        format="DD/MM/yyyy"
+                        label="Query End Date"
+                        value={this.state.newJob.endTime}
+                        onChange={newDate => this.setState({ newJob: { ...this.state.newJob, endTime: newDate } })}
+                    />
+                </MuiPickersUtilsProvider>
+
+
+                {
+                    this.state.newJob.category === 'Location' &&
+                    <TextField
+                        style={{ marginTop: 16 }}
+                        label="Query Location (Latitude)"
+                        type="number"
+                        value={this.state.newJob.latitude === -1 ? '' : this.state.newJob.latitude}
+                        onChange={event => this.setState({ newJob: { ...this.state.newJob, latitude: event.target.value } })}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                }
+
+                {
+                    this.state.newJob.category === 'Location' &&
+                    <TextField
+                        style={{ marginTop: 16 }}
+                        label="Query Location (Longitude)"
+                        type="number"
+                        value={this.state.newJob.longitude === -1 ? '' : this.state.newJob.longitude}
+                        onChange={event => this.setState({ newJob: { ...this.state.newJob, longitude: event.target.value } })}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                }
+
+                {
+                    this.state.newJob.category === 'LAC/Cell-ID' &&
+                    <TextField
+                        style={{ marginTop: 16 }}
+                        label="Query LAC"
+                        type="number"
+                        value={this.state.newJob.lac === -1 ? '' : this.state.newJob.lac}
+                        onChange={event => this.setState({ newJob: { ...this.state.newJob, lac: event.target.value } })}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                }
+
+                {
+                    this.state.newJob.category === 'LAC/Cell-ID' &&
+                    <TextField
+                        style={{ marginTop: 16 }}
+                        label="Query Cell-ID"
+                        type="number"
+                        value={this.state.newJob.cellId === -1 ? '' : this.state.newJob.cellId}
+                        onChange={event => this.setState({ newJob: { ...this.state.newJob, cellId: event.target.value } })}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                }
+
+                {
+                    (this.state.newJob.category === 'Location' || this.state.newJob.category === 'LAC/Cell-ID') &&
+                    <TextField
+                        style={{ marginTop: 16 }}
+                        label="Query Distance"
+                        type="number"
+                        value={this.state.newJob.distance === -1 ? '' : this.state.newJob.distance}
+                        onChange={event => this.setState({ newJob: { ...this.state.newJob, distance: event.target.value } })}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                }
+
+                {
+                    (this.state.newJob.category === 'IMSI' || this.state.newJob.category === 'IMEI' || this.state.newJob.category === 'MSISDN') &&
+                    <FormControl variant="outlined" style={{ marginTop: 16 }}>
+                        <InputLabel id="target-selector-label">Query</InputLabel>
+                        <Select
+                            labelId="target-selector-label"
+                            value={this.state.newJob.query}
+                            onChange={event => this.setState({ newJob: { ...this.state.newJob, query: event.target.value } })}
+                            label="Age"
+                        >
+                            {
+                                this.state.selectedCase['targets'].map(target => <MenuItem key={target} value={target}>{target}</MenuItem>)
+                            }
+                        </Select>
+                    </FormControl>
+                }
 
                 <Button
                     variant="contained"
@@ -256,6 +317,7 @@ class CaseIntel extends React.Component {
                     fullWidth
                     style={{ marginTop: 32 }}
                     startIcon={<Add />}
+                    onClick={this.onCreateJobButtonPress}
                 >
                     Create
                 </Button>
@@ -271,7 +333,7 @@ class CaseIntel extends React.Component {
                 options={this.state.cases}
                 getOptionLabel={(option) => `Case ${option.id} - ${option.name}`}
                 value={this.state.selectedCase}
-                onChange={(event, value) => this.setState({ selectedCase: value })}
+                onChange={(event, value) => this.fetchJobsForCase(value)}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -340,10 +402,10 @@ class CaseIntel extends React.Component {
                     <b>Users: </b>
                     {
                         this.state.selectedCase ?
-                            this.state.selectedCase.users.map((user, index) =>
+                            this.state.selectedCase.accounts.map((accountId, index) =>
                                 <Chip
                                     key={index}
-                                    label={user}
+                                    label={this.state.accountIdNameLookupMap[accountId]}
                                     className={classes.chip}
                                 />
                             )
@@ -371,7 +433,7 @@ class CaseIntel extends React.Component {
 
     getJobsTableComponent() {
         const {
-            classes
+            classes,
         } = this.props;
 
         return (
@@ -382,24 +444,50 @@ class CaseIntel extends React.Component {
                     Container: props => <Paper {...props} elevation={4} />
                 }}
                 options={{
-                    grouping: true,
+                    grouping: false,
                     exportButton: true,
-                    actionsColumnIndex: -1,
                     paging: false,
+                    actionsColumnIndex: -1,
                 }}
                 columns={[
                     { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
                     { title: "Category", field: "category" },
                     {
+                        title: "Query",
+                        field: "query",
+                        render: rowData => {
+                            let jobCategory = rowData['category'];
+                            let resultantHtmlElement = null;
+                            if (jobCategory === 'Location') {
+                                let queryArr = rowData['query'].split(',');
+                                resultantHtmlElement = <span>
+                                    <b>Latitude: </b>{queryArr[0]}<br />
+                                    <b>Longitude: </b>{queryArr[1]}<br />
+                                    <b>Distance: </b>{queryArr[2]}<br />
+                                </span>;
+                            }
+                            else if (jobCategory === 'LAC/Cell-ID') {
+                                let queryArr = rowData['query'].split(',');
+                                resultantHtmlElement = <span>
+                                    <b>LAC: </b>{queryArr[0]}<br />
+                                    <b>Cell-ID: </b>{queryArr[1]}<br />
+                                    <b>Distance: </b>{queryArr[2]}<br />
+                                </span>;
+                            }
+                            else resultantHtmlElement = rowData['query'];
+                            return resultantHtmlElement;
+                        }
+                    },
+                    {
                         title: "Status",
                         field: "status",
                         render: rowData =>
-                            <span style={{ color: rowData.status === 'Pending' ? 'green' : 'red' }}>
+                            <span style={{ color: rowData.status === 'PENDING' ? 'red' : 'green' }}>
                                 {rowData.status}
                             </span>
                     },
-                    { title: "Query Start Date", field: "eventStartDate", align: "center" },
-                    { title: "Query End Date", field: "eventEndDate", align: "center" }
+                    { title: "Start Time", field: "startTime", align: "center" },
+                    { title: "End Time", field: "endTime", align: "center" }
                 ]}
                 data={this.state.selectedCaseJobsList}
                 title='Jobs List'
@@ -409,11 +497,131 @@ class CaseIntel extends React.Component {
                         tooltip: 'Delete Job',
                         onClick: (event, rowData) => {
                             // Do Delete operation
+                            this.onDeleteButtonPress(rowData);
                         },
                     }
                 ]}
             />
         );
+    }
+
+    componentDidMount() {
+        this.getAllAccounts();
+        this.getAllCases();
+    }
+
+    resetToDefault() {
+        this.setState({
+            drawerOpen: false,
+            editMode: false,
+            newJob: {
+                id: -1,
+                case: -1,
+                category: 'IMSI',
+                status: '',
+                latitude: -1,
+                longitude: -1,
+                distance: -1,
+                lac: -1,
+                cellId: -1,
+                startTime: new Date(),
+                endTime: new Date(),
+                query: '',
+            }
+        });
+    }
+
+
+    async getAllAccounts() {
+        try {
+            const apiEndpoint = apiHost + '/accounts/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+
+            let accountIdNameLookupMap = {};
+
+            response.forEach(account => {
+                let accountId = account['id'];
+                let accountName = account['name'];
+                accountIdNameLookupMap[accountId] = accountName;
+            });
+
+
+            this.setState({
+                accountIdNameLookupMap: accountIdNameLookupMap,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
+    async getAllCases() {
+        try {
+            const apiEndpoint = apiHost + '/cases/';
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            response = response.filter((caseItem, index) => caseItem['name'] !== 'DEFAULT_CASE_CHECK_OT');
+            this.setState({ cases: response });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async fetchJobsForCase(selectedCase) {
+        try {
+            this.setState({ selectedCase: selectedCase });
+            const apiEndpoint = apiHost + '/jobs/?case=' + selectedCase.id;
+            let response = await axios.get(apiEndpoint);
+            response = response.data;
+            this.setState({ selectedCaseJobsList: response });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async onCreateJobButtonPress() {
+        try {
+            const apiEndpoint = apiHost + '/jobs/';
+            let payload = this.state.newJob;
+            if (payload.category === 'Location') {
+                payload['query'] = payload['latitude'] + ',' + payload['longitude'] + ',' + payload['distance'];
+                delete payload['latitude'];
+                delete payload['longitude'];
+                delete payload['distance'];
+            }
+            else if (payload.category === 'LAC/Cell-ID') {
+                payload['query'] = payload['lac'] + ',' + payload['cellId'] + ',' + payload['distance'];
+                delete payload['lac'];
+                delete payload['cellId'];
+                delete payload['distance'];
+            }
+            payload['status'] = 'PENDING';
+            payload['startTime'] = payload['startTime'].valueOf();
+            payload['endTime'] = payload['endTime'].valueOf();
+            payload['case'] = this.state.selectedCase['id'];
+            console.log(payload);
+
+            let response = await axios.post(apiEndpoint, payload);
+            response = response.data;
+            console.log(response);
+            this.resetToDefault();
+            this.fetchJobsForCase(this.state.selectedCase);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async onDeleteButtonPress(rowData) {
+        try {
+            const apiEndpoint = apiHost + '/jobs/' + rowData.id + '/';
+            let response = await axios.delete(apiEndpoint);
+            response = response.data;
+            this.resetToDefault();
+            this.fetchJobsForCase(this.state.selectedCase);
+        } catch (error) {
+            console.log(error);
+        }
     }
 };
 

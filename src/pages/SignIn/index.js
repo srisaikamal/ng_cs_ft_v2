@@ -115,6 +115,7 @@ class SignIn extends React.Component {
       response = response.data;
       let accessToken = response['token'];
       axios.defaults.headers.common['Authorization'] = `Token ${accessToken}`;
+      localStorage.setItem('current_account', JSON.stringify(response));
       window.location = '/landing';
       // console.log('[onSignInButtonPress] : ' + JSON.stringify(response));
     } catch (error) {

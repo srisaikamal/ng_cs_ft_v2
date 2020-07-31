@@ -129,6 +129,14 @@ class Reports extends React.Component {
         let rightDrawerSize = this.state.rightDrawerOpen ? 3 : 1;
         let mainContentSize = 12 - (leftDrawerSize + rightDrawerSize);
 
+        let height = window.innerHeight;
+        if (mainContentSize === 6) {
+            height = window.innerHeight / 1.5;
+        }
+        else if (mainContentSize === 8) {
+            height = window.innerHeight / 1.3;
+        }
+
         return (
             <div>
                 <Grid container>
@@ -136,7 +144,7 @@ class Reports extends React.Component {
                         {this.getLeftDrawer()}
                     </Grid>
                     <Grid item md={mainContentSize} style={{ padding: 16 }}>
-                        {this.getMainContent()}
+                        {this.state.selectedJob && this.getMainContent(height)}
                     </Grid>
                     <Grid item md={rightDrawerSize}>
                         {this.getRightDrawer()}
@@ -146,14 +154,21 @@ class Reports extends React.Component {
         );
     }
 
-    getMainContent() {
+    getMainContent(height) {
         switch (this.state.activeWidget) {
             case 'Handset':
                 return <HandsetHistoryContent />;
             case 'Map':
-                return <DataMapContent />;
+                return <DataMapContent
+                    selectedJob={this.state.selectedJob}
+                    selectedJobCdrList={this.state.selectedJobCdrList}
+                />;
             case 'Linktree':
-                return <LinkTreeContent />;
+                return <LinkTreeContent
+                    height={height}
+                    selectedJob={this.state.selectedJob}
+                    selectedJobCdrList={this.state.selectedJobCdrList}
+                />;
             default:
                 return <DataTableContent
                     selectedJob={this.state.selectedJob}
@@ -425,9 +440,14 @@ class Reports extends React.Component {
         );
     }
 
-    componentDidMount() {
-        this.getAllCdrColumns();
-        this.getDefaultCase();
+    async componentDidMount() {
+        const {
+            selectedCase
+        } = this.props;
+
+        await this.getAllCdrColumns();
+        await this.getDefaultCase();
+        //await this.fetchCdrForJob(this.state.selectedJob);
     }
 
     async getAllCdrColumns() {
@@ -446,11 +466,11 @@ class Reports extends React.Component {
             const apiEndpoint = apiHost + '/cases/';
             let response = await axios.get(apiEndpoint);
             response = response.data;
-            response.every((caseItem, index) => {
+            response.every(async (caseItem, index) => {
                 let caseName = caseItem['name'];
                 if (caseName === 'DEFAULT_CASE_CHECK_OT') {
                     this.setState({ selectedCase: caseItem });
-                    this.fetchJobsForCase(caseItem);
+                    await this.fetchJobsForCase(caseItem);
                     return false;
                 }
                 return true;
@@ -471,6 +491,7 @@ class Reports extends React.Component {
                 selectedCaseJobsList: response,
                 selectedJob: response[0]
             });
+            await this.fetchCdrForJob(response[0]);
         } catch (error) {
             console.log(error);
         }
@@ -509,7 +530,6 @@ class Reports extends React.Component {
                     selectedJobCdrList = selectedJobCdrList.concat(results);
                 }
             }
-            console.log(selectedJobCdrList, selectedJobCdrList.length);
             this.setState({ selectedJobCdrList: selectedJobCdrList });
         } catch (error) {
             console.log(error);

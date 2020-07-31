@@ -14,6 +14,7 @@ const styles = theme => ({
 
 let sampleTitle = '<span>IMSI: 9867543287<br/ >IMEI: 8976573429<br />Location: 78.56, 998.66</span>';
 
+/*
 const connectionGraph = {
     nodes: [
         { id: 1, label: "9800987675", title: sampleTitle },
@@ -31,10 +32,11 @@ const connectionGraph = {
         { from: 3, to: 4 },
     ]
 };
+*/
 
-const connectionGraphOptions = {
+let connectionGraphOptions = {
     layout: {
-        hierarchial: {
+        hierarchical: {
             enabled: true,
             levelSeparation: 250,
             nodeSpacing: 300,
@@ -44,7 +46,6 @@ const connectionGraphOptions = {
             parentCentralization: true,
             direction: 'UD',        // UD, DU, LR, RL
             sortMethod: 'hubsize',  // hubsize, directed
-            shakeTowards: 'leaves'  // roots, leaves
         },
     },
     physics: {
@@ -55,12 +56,12 @@ const connectionGraphOptions = {
         tooltipDelay: 100
     },
     nodes: {
-        shape: 'ellipse',
-        color: '#ff0000',
+        shape: 'dot',
+        color: '#ff9800',
         fixed: false,
         font: {
-            color: 'white',
-            size: 18, // px
+            color: 'black',
+            size: 20, // px
             face: 'Montserrat-Regular',
             background: 'none',
             strokeWidth: 0, // px
@@ -69,8 +70,8 @@ const connectionGraphOptions = {
             multi: false,
             vadjust: 0,
             bold: {
-                color: 'white',
-                size: 18, // px
+                color: 'black',
+                size: 20, // px
                 face: 'Montserrat-Regular',
                 vadjust: 0,
                 mod: 'bold'
@@ -87,11 +88,52 @@ const connectionGraphOptions = {
             type: 'diagonalCross',
         }
     },
-    height: "500px"
+    height: window.innerHeight / 1.5,
 };
 
 class LinkTree extends React.PureComponent {
     render() {
+        const {
+            classes,
+            selectedJob,
+            selectedJobCdrList,
+            height
+        } = this.props;
+
+        console.log(height);
+
+        connectionGraphOptions['height'] = height + 150;
+
+        let nodesList = new Set();
+        let edgesList = [];
+
+        selectedJobCdrList.forEach(cdr => {
+            let callingNumber = cdr['callingnumber'];
+            let calledNumber = cdr['callednumber'];
+
+            nodesList.add(callingNumber);
+            nodesList.add(calledNumber);
+
+            edgesList.push({
+                from: callingNumber,
+                to: calledNumber,
+            });
+        });
+
+        let nodes = [];
+        nodesList.forEach(node => {
+            nodes.push({
+                id: node,
+                label: " " + node.toString() + " ",
+                title: node.toString(),
+            })
+        });
+
+        let connectionGraph = {
+            nodes: nodes,
+            edges: edgesList,
+        };
+
         return (
             <div>
                 <Typography variant="h5" component="h5">
@@ -105,6 +147,10 @@ class LinkTree extends React.PureComponent {
                         select: (event) => {
                             let { nodes, edges } = event;
                         }
+                    }}
+                    getNetwork={network => {
+                        //  if you want access to vis.js network api you can set the state in a parent component using this property
+
                     }}
                 />
             </div>

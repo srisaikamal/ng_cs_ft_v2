@@ -37,6 +37,7 @@ import {
     KeyboardDatePicker,
 } from '@material-ui/pickers';
 import axios from 'axios';
+import moment from 'moment';
 import React, { forwardRef } from 'react';
 // Local
 import { drawerWidth, apiHost } from '../../../config';
@@ -486,8 +487,20 @@ class CaseIntel extends React.Component {
                                 {rowData.status}
                             </span>
                     },
-                    { title: "Start Time", field: "startTime", align: "center" },
-                    { title: "End Time", field: "endTime", align: "center" }
+                    {
+                        title: "Start Time",
+                        field: "startTime",
+                        align: "center",
+                        render: rowData => moment(rowData['startTime']).format('L'),
+                        grouping: false,
+                    },
+                    {
+                        title: "End Time",
+                        field: "endTime",
+                        align: "center",
+                        render: rowData => moment(rowData['endTime']).format('L'),
+                        grouping: false,
+                    },
                 ]}
                 data={this.state.selectedCaseJobsList}
                 title='Jobs List'

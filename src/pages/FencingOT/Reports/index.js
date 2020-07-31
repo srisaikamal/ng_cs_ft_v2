@@ -135,7 +135,7 @@ class Reports extends React.Component {
                         {this.getLeftDrawer()}
                     </Grid>
                     <Grid item md={mainContentSize} style={{ padding: 16 }}>
-                        {this.getMainContent()}
+                        {this.state.selectedJob && this.getMainContent()}
                     </Grid>
                     <Grid item md={rightDrawerSize}>
                         {this.getRightDrawer()}

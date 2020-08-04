@@ -6978,6 +6978,11 @@ lodash.uniq@^4.5.0:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
 
+lodash@^4.17.4:
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
+
 loglevel@^1.6.6:
   version "1.6.7"
   resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.6.7.tgz#b3e034233188c68b889f5b862415306f565e2c56"
@@ -9282,6 +9287,13 @@ react-transition-group@^4.0.0, react-transition-group@^4.4.0:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
+react-visjs-timeline@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/react-visjs-timeline/-/react-visjs-timeline-1.6.0.tgz#d741c3625caa4d04ec00bd0ad41d582c7e5792b6"
+  integrity sha512-pGjo/XaqFBWmEARrebRClSBn9oaTtSA2m1WPyNSGJtJq+s8odZ1Gcq9FW4bIYx0HS9SPYwWpSAWRysSByi0EGw==
+  dependencies:
+    lodash "^4.17.4"
+
 react@^16.13.1:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react/-/react-16.13.1.tgz#2e818822f1a9743122c063d6410d85c1e3afe48e"
@@ -11038,6 +11050,11 @@ vis-data@^6.1.1:
   resolved "https://registry.yarnpkg.com/vis-data/-/vis-data-6.6.1.tgz#2aa52e46c305ad46bb7abe6e7634e2eecd743b15"
   integrity sha512-xmujDB2Dzf8T04rGFJ9OP4OA6zRVrz8R9hb0CVKryBrZRCljCga9JjSfgctA8S7wdZu7otDtUIwX4ZOgfV/57w==
 
+vis-data@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/vis-data/-/vis-data-7.0.0.tgz#71ff8ec06e4d0b99f1c8cdecfdf97309eb4562cf"
+  integrity sha512-qKpyAQ9UMT0QygLbCulgabKkgfo8aVkuWSqhvEiaah/iy/Dvj17iMFChUU+UIioorWlweXcp5ziXoMLIl7hTAg==
+
 vis-network@^5.1.1:
   version "5.4.1"
   resolved "https://registry.yarnpkg.com/vis-network/-/vis-network-5.4.1.tgz#e0e33d23775e834f4cfd961bd7b92bf11df097c6"
@@ -11051,10 +11068,15 @@ vis-network@^5.1.1:
     vis-data "^6.1.1"
     vis-util "^1.1.6"
 
-vis-network@^7.10.0:
-  version "7.10.0"
-  resolved "https://registry.yarnpkg.com/vis-network/-/vis-network-7.10.0.tgz#85f7721ace8de39de80faa17799f4ab5bdcf16a8"
-  integrity sha512-SYQ3y+cGqcFpPfaQbpGBXsaQjjbQq5xjt5dVztCD6x5ETQHlAYaFiYiWnVo0qoVI9lspfwoCfp4wOhW+rvId6Q==
+vis-network@^7.10.2:
+  version "7.10.2"
+  resolved "https://registry.yarnpkg.com/vis-network/-/vis-network-7.10.2.tgz#b318f1907cf006d9640c4c31a262e0782405a3cf"
+  integrity sha512-KDx2agbDnaiE0Bye4AcCRqTn5mxzDKhdUNpKkzSn0AOLBmdhNtPGjxAFluAmvFVyiSK5R6Q5KIWdLjeIMu/PAQ==
+
+vis-timeline@^7.3.7:
+  version "7.3.7"
+  resolved "https://registry.yarnpkg.com/vis-timeline/-/vis-timeline-7.3.7.tgz#af4b8d7c72ba9bd00944b9c2cb80d46ff629c516"
+  integrity sha512-1tqPdJsM6JXCBY80Ut15TCQD2VoolAabQ7mXguOH/X+HrBCv7KstkfZ3J2eVkHWevGEh2D8m+c8reyW2E6YI3Q==
 
 vis-util@^1.1.6:
   version "1.1.10"

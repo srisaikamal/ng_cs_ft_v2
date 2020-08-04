@@ -19,7 +19,6 @@ class DataMap extends React.PureComponent {
 
         return (
             <div>
-                
             </div>
         );
     }

@@ -100,7 +100,6 @@ class LinkTree extends React.PureComponent {
             height
         } = this.props;
 
-        console.log(height);
 
         connectionGraphOptions['height'] = height + 150;
 

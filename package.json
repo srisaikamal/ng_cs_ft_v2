@@ -20,7 +20,9 @@
     "react-graph-vis": "^1.0.5",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
-    "vis-network": "^7.10.0"
+    "react-visjs-timeline": "^1.6.0",
+    "vis-network": "^7.10.2",
+    "vis-timeline": "^7.3.7"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -11,9 +11,20 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
+  TextField,
+  Select,
+  InputLabel,
+  FormControl,
+  MenuItem,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  Button,
+  FormLabel,
 } from '@material-ui/core';
 import {
   TableChart,
+  Add,
   Timeline,
   People,
   AddBox,
@@ -36,6 +47,11 @@ import {
 } from '@material-ui/icons';
 import React, { forwardRef } from 'react';
 import MaterialTable from 'material-table';
+import MomentUtils from '@date-io/moment';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
 import axios from 'axios';
 import moment from 'moment';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -82,14 +98,19 @@ const styles = (theme) => ({
   },
   leftdrawer: {
     height: window.innerHeight,
-    backgroundColor: '#7395AE',
+    backgroundColor: '#18202c',
   },
   rightdrawer: {
     height: window.innerHeight,
-    backgroundColor: '#7395AE',
+    backgroundColor: '#18202c',
   },
   widgetListItem: {
     marginRight: 24,
+  },
+  drawercontent: {
+    marginTop: -18,
+    marginLeft: 40,
+    padding: 18,
   },
 });
 
@@ -108,9 +129,10 @@ class Reports extends React.Component {
   }
 
   state = {
+    expanded: true,
     leftDrawerOpen: false,
     rightDrawerOpen: false,
-    activeWidget: 'Handset',
+    activeWidget: 'Table',
     selectedCaseJobsList: [],
     selectedJob: null,
     selectedJobCdrList: [],
@@ -131,10 +153,14 @@ class Reports extends React.Component {
     dataTableSelectedColumns: ['id', 'callingnumber', 'callednumber'],
     allCdrColumns: [],
   };
-
+  handleChange = (panel) => (event, expanded) => {
+    this.setState({
+      expanded: expanded ? panel : false,
+    });
+  };
   render() {
     const { classes } = this.props;
-
+    const { expanded } = this.state;
     let leftDrawerSize = this.state.leftDrawerOpen ? 3 : 1;
     let rightDrawerSize = this.state.rightDrawerOpen ? 3 : 1;
     let mainContentSize = 12 - (leftDrawerSize + rightDrawerSize);
@@ -166,7 +192,12 @@ class Reports extends React.Component {
   getMainContent(height) {
     switch (this.state.activeWidget) {
       case 'Handset':
-        return <HandsetHistoryContent />;
+        return (
+          <HandsetHistoryContent
+            selectedJob={this.state.selectedJob}
+            selectedJobCdrList={this.state.selectedJobCdrList}
+          />
+        );
       case 'Map':
         return (
           <DataMapContent
@@ -205,18 +236,259 @@ class Reports extends React.Component {
             <IconButton
               onClick={() => this.setState({ leftDrawerOpen: !leftDrawerOpen })}
             >
-              {leftDrawerOpen ? <ChevronLeft /> : <ChevronRight />}
+              {leftDrawerOpen ? (
+                <ChevronLeft style={{ color: 'white' }} />
+              ) : (
+                <ChevronRight style={{ color: 'white' }} />
+              )}
             </IconButton>
           </div>
           {leftDrawerOpen ? (
-            <div style={{ padding: 8 }}>
-              <ExpansionPanel className={classes.expansion} defaultExpanded>
+            <div style={{ padding: 8, height: 'window.innerHeight' }}>
+              <ExpansionPanel
+                expanded={this.state.expanded === 'panel1'}
+                onChange={this.handleChange('panel1')}
+                className={classes.expansion}
+                defaultExpanded='true'
+              >
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography
-                    component='h5'
-                    variant='h5'
-                    style={{ marginBottom: 32 }}
-                  >
+                  <Typography component='p' variant='p'>
+                    <b>Add Jobs</b>
+                  </Typography>
+                </ExpansionPanelSummary>
+                {
+                  <div className={classes.drawercontent}>
+                    <FormControl style={{ marginTop: 16, minWidth: 240 }}>
+                      <InputLabel id='category-label'>Category</InputLabel>
+                      <Select
+                        labelId='category-label'
+                        value={this.state.newJob.category}
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              category: event.target.value,
+                            },
+                          })
+                        }
+                      >
+                        <MenuItem value={'IMSI'}>IMSI</MenuItem>
+                        <MenuItem value={'IMEI'}>IMEI</MenuItem>
+                        <MenuItem value={'MSISDN'}>MSISDN</MenuItem>
+                        <MenuItem value={'Location'}>Location</MenuItem>
+                        <MenuItem value={'LAC/Cell-ID'}>LAC/Cell-ID</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <br />
+
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                      <KeyboardDatePicker
+                        style={{ marginTop: 16 }}
+                        disableToolbar
+                        variant='inline'
+                        margin='normal'
+                        format='DD/MM/yyyy'
+                        openTo='year'
+                        label='Query Start Date'
+                        value={this.state.newJob.startTime}
+                        onChange={(newDate) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              startTime: newDate,
+                            },
+                          })
+                        }
+                      />
+                    </MuiPickersUtilsProvider>
+                    <br />
+
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                      <KeyboardDatePicker
+                        style={{ marginTop: 16 }}
+                        disableToolbar
+                        variant='inline'
+                        margin='normal'
+                        openTo='year'
+                        format='DD/MM/yyyy'
+                        label='Query End Date'
+                        value={this.state.newJob.endTime}
+                        onChange={(newDate) =>
+                          this.setState({
+                            newJob: { ...this.state.newJob, endTime: newDate },
+                          })
+                        }
+                      />
+                    </MuiPickersUtilsProvider>
+                    <br />
+
+                    {this.state.newJob.category === 'Location' && (
+                      <TextField
+                        style={{ marginTop: 16 }}
+                        label='Query Location (Latitude)'
+                        style={{ minWidth: 500 }}
+                        type='number'
+                        value={
+                          this.state.newJob.latitude === -1
+                            ? ''
+                            : this.state.newJob.latitude
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              latitude: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+                    <br />
+                    {this.state.newJob.category === 'Location' && (
+                      <TextField
+                        label='Query Location (Longitude)'
+                        type='number'
+                        style={{ minWidth: 500 }}
+                        value={
+                          this.state.newJob.longitude === -1
+                            ? ''
+                            : this.state.newJob.longitude
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              longitude: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+
+                    {this.state.newJob.category === 'LAC/Cell-ID' && (
+                      <TextField
+                        style={{ marginTop: 16 }}
+                        label='Query LAC'
+                        type='number'
+                        style={{ minWidth: 500 }}
+                        value={
+                          this.state.newJob.lac === -1
+                            ? ''
+                            : this.state.newJob.lac
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              lac: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+
+                    {this.state.newJob.category === 'LAC/Cell-ID' && (
+                      <TextField
+                        label='Query Cell-ID'
+                        type='number'
+                        style={{ minWidth: 500 }}
+                        value={
+                          this.state.newJob.cellId === -1
+                            ? ''
+                            : this.state.newJob.cellId
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              cellId: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+
+                    {(this.state.newJob.category === 'Location' ||
+                      this.state.newJob.category === 'LAC/Cell-ID') && (
+                      <TextField
+                        style={{ marginTop: 16 }}
+                        label='Query Distance'
+                        style={{ minWidth: 500 }}
+                        type='number'
+                        value={
+                          this.state.newJob.distance === -1
+                            ? ''
+                            : this.state.newJob.distance
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              distance: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+
+                    {(this.state.newJob.category === 'IMSI' ||
+                      this.state.newJob.category === 'IMEI' ||
+                      this.state.newJob.category === 'MSISDN') && (
+                      <TextField
+                        label='Query'
+                        style={{ minWidth: 240 }}
+                        value={this.state.newJob.query}
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              query: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+                    <br />
+                    <Button
+                      variant='contained'
+                      color='primary'
+                      fullWidth
+                      style={{ marginTop: 10, marginLeft: -12 }}
+                      startIcon={<Add />}
+                      onClick={this.onCreateJobButtonPress}
+                    >
+                      Create
+                    </Button>
+                  </div>
+                }
+              </ExpansionPanel>
+
+              <ExpansionPanel
+                className={classes.expansion}
+                defaultexpanded={this.state.expanded === 'panel2'}
+                onChange={this.handleChange('panel2')}
+                ltExpanded
+              >
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography component='p' variant='p'>
                     <b>Jobs</b>
                   </Typography>
                 </ExpansionPanelSummary>
@@ -237,7 +509,9 @@ class Reports extends React.Component {
                 paddingBottom: window.innerHeight / 3.2,
               }}
             >
-              <span style={{ fontSize: 21, textAlign: 'center' }}>
+              <span
+                style={{ fontSize: 21, textAlign: 'center', color: 'white' }}
+              >
                 J<br />
                 O<br />
                 B<br />
@@ -255,7 +529,7 @@ class Reports extends React.Component {
     return (
       <MaterialTable
         icons={tableIcons}
-        style={{ marginTop: 32, marginRight: 16 }}
+        style={{ marginTop: 16, marginRight: 16 }}
         components={{
           Container: (props) => <Paper {...props} elevation={0} />,
         }}
@@ -351,19 +625,22 @@ class Reports extends React.Component {
                 this.setState({ rightDrawerOpen: !rightDrawerOpen })
               }
             >
-              {rightDrawerOpen ? <ChevronRight /> : <ChevronLeft />}
+              {rightDrawerOpen ? (
+                <ChevronRight style={{ color: 'white' }} />
+              ) : (
+                <ChevronLeft style={{ color: 'white' }} />
+              )}
             </IconButton>
           </div>
 
           {rightDrawerOpen ? (
-            <div style={{ padding: 16 }}>
-              <ExpansionPanel>
+            <div style={{ padding: 16, marginTop: -12 }}>
+              <ExpansionPanel
+                expanded={this.state.expanded === 'panel3'}
+                onChange={this.handleChange('panel3')}
+              >
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography
-                    component='h5'
-                    variant='h5'
-                    style={{ marginBottom: 32 }}
-                  >
+                  <Typography component='p' variant='p'>
                     <b>Query</b>
                   </Typography>
                 </ExpansionPanelSummary>
@@ -399,13 +676,12 @@ class Reports extends React.Component {
                   )}
                 </ExpansionPanelDetails>
               </ExpansionPanel>
-              <ExpansionPanel>
+              <ExpansionPanel
+                expanded={this.state.expanded === 'panel4'}
+                onChange={this.handleChange('panel4')}
+              >
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography
-                    component='h5'
-                    variant='h5'
-                    style={{ marginBottom: 24, marginTop: 32 }}
-                  >
+                  <Typography component='p' variant='p'>
                     <b>Widgets</b>
                   </Typography>
                 </ExpansionPanelSummary>
@@ -428,7 +704,9 @@ class Reports extends React.Component {
                 paddingBottom: window.innerHeight / 5.8,
               }}
             >
-              <span style={{ fontSize: 21, textAlign: 'center' }}>
+              <span
+                style={{ fontSize: 21, textAlign: 'center', color: 'white' }}
+              >
                 W<br />
                 I<br />
                 D<br />

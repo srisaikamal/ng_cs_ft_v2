@@ -10,7 +10,29 @@ import {
   TextField,
   Typography,
   withStyles,
+  Dialog,
+  AppBar,
+  Toolbar,
+  IconButton,
+  DialogContent,
   Paper,
+  Table,
+  TableRow,
+  TableContainer,
+  TableCell,
+  TableHead,
+  TableBody,
+  Card,
+  CardContent,
+  CardActions,
+  Checkbox,
+  List,
+  ListItemIcon,
+  Divider,
+  ListItemLink,
+  ListItemText,
+  ListItem,
+  ListItemSecondaryAction,
 } from '@material-ui/core';
 import {
   Add,
@@ -31,10 +53,18 @@ import {
   Search,
   ViewColumn,
 } from '@material-ui/icons';
+import AddIcon from '@material-ui/icons/Add';
 import { Autocomplete } from '@material-ui/lab';
 import MaterialTable from 'material-table';
 import React, { forwardRef } from 'react';
+import DraftsIcon from '@material-ui/icons/Drafts';
+import InboxIcon from '@material-ui/icons/Inbox';
 import axios from 'axios';
+import CloseIcon from '@material-ui/icons/Close';
+import CommentIcon from '@material-ui/icons/Comment';
+import ChipInput from 'material-ui-chip-input';
+import SplitterLayout from 'react-splitter-layout';
+import 'react-splitter-layout/lib/index.css';
 // Local
 import { drawerWidth, apiHost } from '../../../config';
 
@@ -69,12 +99,14 @@ const styles = (theme) => ({
   drawer: {
     width: drawerWidth,
     flexShrink: 0,
-    maarginTop: -60,
   },
   drawerPaper: {
-    width: drawerWidth,
-    padding: theme.spacing(4),
-    backgroundColor: '#7395AE',
+    width: '60%',
+
+    align: 'center',
+  },
+  title: {
+    padding: 10,
   },
 });
 
@@ -91,7 +123,13 @@ class Cases extends React.Component {
 
   state = {
     drawerOpen: false,
+    dialogOpen: false,
+    dialogOpen1: false,
     editMode: false,
+    targets: [],
+    targets1: [],
+    targets2: [],
+    chipname: '',
     editableItem: {
       name: '',
       description: '',
@@ -108,37 +146,129 @@ class Cases extends React.Component {
     accountIdNameLookupMap: {},
   };
 
+  handleDelete = () => {
+    this.setState({
+      dialogOpen: true,
+    });
+  };
+  handleClose = () => {
+    this.setState({
+      dialogOpen: false,
+    });
+  };
+  handleClose1 = () => {
+    this.setState({
+      drawerOpen: false,
+    });
+  };
+  handleClick = (data) => {
+    if (data === 'MSISDN') {
+      this.setState({
+        chipname: 'MSISDN',
+      });
+    } else if (data === 'IMEI') {
+      this.setState({
+        chipname: 'IMEI',
+      });
+    } else {
+      this.setState({
+        chipname: 'LOCATIONS',
+      });
+    }
+  };
+  handleAddChip = (chip) => {
+    if (this.state.chipname === 'MSISDN') {
+      if (this.state.targets.indexOf(chip) == -1) {
+        let targets = this.state.targets;
+        targets.push(chip);
+        this.setState({ targets: targets });
+      }
+    } else if (this.state.chipname === 'IMEI') {
+      if (this.state.targets1.indexOf(chip) == -1) {
+        let targets1 = this.state.targets1;
+        targets1.push(chip);
+        this.setState({ targets1: targets1 });
+      }
+    } else {
+      if (this.state.targets2.indexOf(chip) == -1) {
+        let targets2 = this.state.targets2;
+        targets2.push(chip);
+        this.setState({ targets2: targets2 });
+      }
+    }
+  };
+
+  handleDeleteChip = (chip, index) => {
+    if (this.state.chipname === 'MSISDN') {
+      if (this.state.targets.indexOf(chip) !== -1) {
+        let targets = this.state.targets;
+        targets.splice(index, 1);
+        this.setState({ targets: targets });
+      }
+    } else if (this.state.chipname === 'IMEI') {
+      if (this.state.targets1.indexOf(chip) !== -1) {
+        let targets1 = this.state.targets1;
+        targets1.splice(index, 1);
+        this.setState({ targets1: targets1 });
+      }
+    } else {
+      if (this.state.targets2.indexOf(chip) !== -1) {
+        let targets2 = this.state.targets2;
+        targets2.splice(index, 1);
+        this.setState({ targets2: targets2 });
+      }
+    }
+  };
+
   render() {
     const { classes } = this.props;
-
+    const targetNames = ['MSISDN', 'IMEI', 'LOCATIONS'];
+    function createData(MSISDN, IMEI, LOCATIONS) {
+      return { MSISDN, IMEI, LOCATIONS };
+    }
+    const rows = [
+      createData(' MSISDN'),
+      createData('IMEI'),
+      createData('LOCATIONS'),
+    ];
     return (
       <div className={classes.drawerdiv}>
         {this.getDrawer()}
         <Grid container>
           <Grid
             item
-            md={1}
-            style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}
+            style={{
+              textAlign: 'center',
+              marginTop: window.innerHeight / 1500,
+              width: 45,
+              height: window.innerHeight,
+              backgroundColor: '#18202c',
+            }}
+            onClick={() =>
+              this.setState({
+                drawerOpen: true,
+                editableItem: {
+                  name: '',
+                  description: '',
+                  category: '',
+                  status: 'Open',
+                  createdAt: '',
+                  updatedAt: '',
+                  accounts: [],
+                  targets: [],
+                },
+                editMode: false,
+              })
+            }
           >
-            <span
-              style={{ fontSize: 42 }}
-              onClick={() =>
-                this.setState({
-                  drawerOpen: true,
-                  editableItem: {
-                    name: '',
-                    description: '',
-                    category: '',
-                    status: 'Open',
-                    createdAt: '',
-                    updatedAt: '',
-                    accounts: [],
-                    targets: [],
-                  },
-                  editMode: false,
-                })
-              }
-            >
+            <span style={{ fontSize: 21, color: 'white' }}>
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
               C<br />
               R<br />
               E<br />
@@ -147,6 +277,7 @@ class Cases extends React.Component {
               E<br />
             </span>
           </Grid>
+          <Grid style={{ padding: 0, width: 36 }}></Grid>
           <Grid item md={11}>
             <MaterialTable
               icons={tableIcons}
@@ -204,13 +335,255 @@ class Cases extends React.Component {
                   grouping: false,
                   render: (rowData) => (
                     <div>
-                      {rowData.targets.map((target, index) => (
+                      {/* {rowData.targets.map((target, index) => (
                         <Chip
                           key={index}
                           label={target}
                           className={classes.chip}
                         />
-                      ))}
+                     ))}*/}
+                      <Chip
+                        label='Add Target'
+                        onDelete={this.handleDelete}
+                        color='secondary'
+                        deleteIcon={<Add />}
+                        clickable
+                      />
+                      <div style={{ width: 200 }}>
+                        <Dialog
+                          aria-labelledby='customized-dialog-title'
+                          open={this.state.dialogOpen}
+                          onClose={this.handleClose}
+                          //className={classes.drawer}
+                          classes={{
+                            paper: classes.drawerPaper,
+                          }}
+                        >
+                          <AppBar
+                            position='static'
+                            style={{
+                              backgroundColor: '#18202c',
+                            }}
+                          >
+                            <Toolbar>
+                              <Grid
+                                justify='space-between' // Add it here :)
+                                container
+                                spacing={20}
+                              >
+                                <Grid item>
+                                  <Typography
+                                    variant='h6'
+                                    color='inherit'
+                                    className={classes.title}
+                                  >
+                                    Targets
+                                  </Typography>
+                                </Grid>
+                                <Grid item>
+                                  <IconButton
+                                    aria-label='close'
+                                    className={classes.closeButton}
+                                    onClick={this.handleClose}
+                                    color='inherit'
+                                  >
+                                    <CloseIcon />
+                                  </IconButton>
+                                </Grid>
+                              </Grid>
+                            </Toolbar>
+                          </AppBar>
+
+                          <DialogContent
+                            style={{ paddingLeft: 0, height: 500 }}
+                          >
+                            {/*{targetNames.map((target) => {*/}
+
+                            <SplitterLayout
+                              primaryIndex={0}
+                              primaryMinSize={200}
+                              secondaryMinSize={400}
+                              style={{ width: '45%' }}
+                            >
+                              <div>
+                                {targetNames.map((target) => {
+                                  return (
+                                    <List
+                                      component='nav'
+                                      aria-label='main mailbox folders'
+                                      onClick={this.handleClick.bind(
+                                        null,
+                                        target
+                                      )}
+                                    >
+                                      <ListItem button>
+                                        <ListItemIcon>
+                                          <InboxIcon />
+                                        </ListItemIcon>
+
+                                        <ListItemText primary={target} />
+                                      </ListItem>
+                                    </List>
+                                  );
+                                })}
+                                {/* <Card className={classes.card}>
+                                  {targetNames.map((target) => {
+                                    return (
+                                      <CardContent key={target}>
+                                        <Typography
+                                          className={classes.title}
+                                          color='textSecondary'
+                                          gutterBottom
+                                        >
+                                          {target}
+                                        </Typography>
+                                      </CardContent>
+                                    );
+                                  })} 
+                                </Card>*/}
+                              </div>
+                              <div>
+                                {this.state.chipname === 'MSISDN' ? (
+                                  <div>
+                                    <Typography>
+                                      {this.state.chipname}
+
+                                      <ChipInput
+                                        defaultValue={[]}
+                                        fullWidth
+                                        value={this.state.targets}
+                                        onAdd={(chip) =>
+                                          this.handleAddChip(chip)
+                                        }
+                                        onDelete={(chip, index) =>
+                                          this.handleDeleteChip(chip, index)
+                                        }
+                                      />
+                                    </Typography>
+
+                                    <List className={classes.root}>
+                                      {this.state.targets.map((target) => {
+                                        return (
+                                          <ListItem
+                                            //key={value}
+                                            role={undefined}
+                                            dense
+                                            button
+                                          >
+                                            <ListItemIcon>
+                                              <Checkbox
+                                                edge='start'
+                                                tabIndex={-1}
+                                                disableRipple
+                                              />
+                                            </ListItemIcon>
+                                            <ListItemText
+                                              //id={labelId}
+                                              primary={target}
+                                            />
+                                          </ListItem>
+                                        );
+                                      })}
+                                    </List>
+                                  </div>
+                                ) : (
+                                  <Typography />
+                                )}
+                                {this.state.chipname === 'IMEI' ? (
+                                  <div>
+                                    <Typography>
+                                      {this.state.chipname}
+                                      <ChipInput
+                                        defaultValue={[]}
+                                        fullWidth
+                                        value={this.state.targets1}
+                                        onAdd={(chip) =>
+                                          this.handleAddChip(chip)
+                                        }
+                                        onDelete={(chip, index) =>
+                                          this.handleDeleteChip(chip, index)
+                                        }
+                                      />
+                                    </Typography>
+
+                                    <List className={classes.root}>
+                                      {this.state.targets1.map((target) => {
+                                        return (
+                                          <ListItem
+                                            //key={value}
+                                            role={undefined}
+                                            dense
+                                            button
+                                          >
+                                            <ListItemIcon>
+                                              <Checkbox
+                                                edge='start'
+                                                tabIndex={-1}
+                                                disableRipple
+                                              />
+                                            </ListItemIcon>
+                                            <ListItemText
+                                              //id={labelId}
+                                              primary={target}
+                                            />
+                                          </ListItem>
+                                        );
+                                      })}
+                                    </List>
+                                  </div>
+                                ) : (
+                                  <Typography />
+                                )}
+                                {this.state.chipname === 'LOCATIONS' ? (
+                                  <div>
+                                    <Typography>
+                                      {this.state.chipname}
+                                      <ChipInput
+                                        defaultValue={[]}
+                                        fullWidth
+                                        value={this.state.targets2}
+                                        onAdd={(chip) =>
+                                          this.handleAddChip(chip)
+                                        }
+                                        onDelete={(chip, index) =>
+                                          this.handleDeleteChip(chip, index)
+                                        }
+                                      />
+                                    </Typography>
+
+                                    <List className={classes.root}>
+                                      {this.state.targets2.map((target) => {
+                                        return (
+                                          <ListItem
+                                            //key={value}
+                                            role={undefined}
+                                            dense
+                                            button
+                                          >
+                                            <ListItemIcon>
+                                              <Checkbox
+                                                edge='start'
+                                                tabIndex={-1}
+                                                disableRipple
+                                              />
+                                            </ListItemIcon>
+                                            <ListItemText
+                                              //id={labelId}
+                                              primary={target}
+                                            />
+                                          </ListItem>
+                                        );
+                                      })}
+                                    </List>
+                                  </div>
+                                ) : (
+                                  <Typography />
+                                )}
+                              </div>
+                            </SplitterLayout>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </div>
                   ),
                 },
@@ -263,8 +636,245 @@ class Cases extends React.Component {
 
   getDrawer() {
     const { classes } = this.props;
-
     return (
+      <Dialog
+        aria-labelledby='customized-dialog-title'
+        open={this.state.drawerOpen}
+        onClose={this.handleClose1}
+        //className={classes.drawer}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+      >
+        <AppBar position='static' style={{ backgroundColor: '#18202c' }}>
+          <Toolbar>
+            <Grid
+              justify='space-between' // Add it here :)
+              container
+              spacing={20}
+            >
+              <Grid item>
+                <Typography
+                  className={classes.title}
+                  component='h5'
+                  variant='h5'
+                >
+                  {this.state.editMode ? 'Edit Case' : 'Add Case'}
+                </Typography>
+              </Grid>
+              <Grid item>
+                <IconButton
+                  aria-label='close'
+                  className={classes.closeButton}
+                  onClick={this.handleClose1}
+                  color='inherit'
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </Toolbar>
+        </AppBar>
+
+        <DialogContent>
+          <TextField
+            label='Case Name'
+            fullWidth
+            value={this.state.editableItem.name}
+            onChange={(event) =>
+              this.setState({
+                editableItem: {
+                  ...this.state.editableItem,
+                  name: event.target.value,
+                },
+              })
+            }
+          />
+          <br />
+
+          <TextField
+            label='Case Description'
+            fullWidth
+            multiline
+            style={{ marginTop: 16 }}
+            value={this.state.editableItem.description}
+            onChange={(event) =>
+              this.setState({
+                editableItem: {
+                  ...this.state.editableItem,
+                  description: event.target.value,
+                },
+              })
+            }
+          />
+          <br />
+          <TextField
+            label='Case Type'
+            multiline
+            fullWidth
+            style={{ marginTop: 16 }}
+            value={this.state.editableItem.description}
+            onChange={(event) =>
+              this.setState({
+                editableItem: {
+                  ...this.state.editableItem,
+                  description: event.target.value,
+                },
+              })
+            }
+          />
+          <br />
+          <TextField
+            fullWidth
+            label='Team Lead'
+            multiline
+            style={{ marginTop: 16 }}
+            value={this.state.editableItem.description}
+            onChange={(event) =>
+              this.setState({
+                editableItem: {
+                  ...this.state.editableItem,
+                  description: event.target.value,
+                },
+              })
+            }
+          />
+          <br />
+
+          <TextField
+            fullWidth
+            label='Accounts'
+            multiline
+            style={{ marginTop: 16 }}
+            value={this.state.editableItem.description}
+            onChange={(event) =>
+              this.setState({
+                editableItem: {
+                  ...this.state.editableItem,
+                  description: event.target.value,
+                },
+              })
+            }
+          />
+          <br />
+          <br />
+
+          <TextField
+            id='date'
+            label='Start Date'
+            fullWidth
+            type='date'
+            defaultValue='2020-08-03'
+            className={classes.textField}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+          <br />
+          <br />
+          <TextField
+            id='date'
+            label='Close Date'
+            fullWidth
+            type='date'
+            defaultValue='2020-08-05'
+            className={classes.textField}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+          <br />
+          <TextField
+            label='Department Zone'
+            multiline
+            style={{ marginTop: 16 }}
+            fullWidth
+            value={this.state.editableItem.description}
+            onChange={(event) =>
+              this.setState({
+                editableItem: {
+                  ...this.state.editableItem,
+                  description: event.target.value,
+                },
+              })
+            }
+          />
+          <br />
+          <TextField
+            label='Department Name'
+            multiline
+            style={{ marginTop: 16 }}
+            fullWidth
+            value={this.state.editableItem.description}
+            onChange={(event) =>
+              this.setState({
+                editableItem: {
+                  ...this.state.editableItem,
+                  description: event.target.value,
+                },
+              })
+            }
+          />
+          <br />
+          <FormControl style={{ marginTop: 16, minWidth: 548 }}>
+            <InputLabel id='category-label'>Resolution</InputLabel>
+            <Select
+              labelId='category-label'
+              value={this.state.editableItem.category}
+              onChange={(event) =>
+                this.setState({
+                  editableItem: {
+                    ...this.state.editableItem,
+                    category: event.target.value,
+                  },
+                })
+              }
+            >
+              <MenuItem value={'Unresolved'}>Unresolved</MenuItem>
+              <MenuItem value={'Suspended'}>Suspended</MenuItem>
+              <MenuItem value={'Resolved'}>Unresolved</MenuItem>
+            </Select>
+          </FormControl>
+          <br />
+          <FormControl style={{ marginTop: 16, minWidth: 548 }}>
+            <InputLabel id='category-label'>Case Status</InputLabel>
+            <Select
+              labelId='category-label'
+              value={this.state.editableItem.category}
+              onChange={(event) =>
+                this.setState({
+                  editableItem: {
+                    ...this.state.editableItem,
+                    category: event.target.value,
+                  },
+                })
+              }
+            >
+              <MenuItem value={'Open'}>Unresolved</MenuItem>
+              <MenuItem value={'Suspended'}>Suspended</MenuItem>
+              <MenuItem value={'Closed'}>Unresolved</MenuItem>
+            </Select>
+          </FormControl>
+          <br />
+
+          <Button
+            variant='contained'
+            color='primary'
+            fullWidth
+            style={{
+              marginTop: 32,
+              marginLeft: -3,
+              backgroundColor: '#18202c',
+            }}
+            startIcon={this.state.editMode ? <Edit /> : <Add />}
+            onClick={this.onCreateOrEditButtonPress}
+          >
+            {this.state.editMode ? 'Update' : 'Create'}
+          </Button>
+        </DialogContent>
+      </Dialog>
+    );
+    /* return (
       <Drawer
         anchor={this.state.drawerPosition}
         className={classes.drawer}
@@ -421,66 +1031,7 @@ class Cases extends React.Component {
             <MenuItem value={'Closed'}>Unresolved</MenuItem>
           </Select>
         </FormControl>
-        {/*<FormControl style={{ marginTop: 16 }}>
-                    <InputLabel id="category-label">Category</InputLabel>
-                    <Select
-                        labelId="category-label"
-                        value={this.state.editableItem.category}
-                        onChange={event => this.setState({ editableItem: { ...this.state.editableItem, category: event.target.value } })}
-                    >
-                        <MenuItem value={'Robbery'}>Robbery</MenuItem>
-                        <MenuItem value={'Bomb Blast'}>Bomb Blast</MenuItem>
-                    </Select>
-                </FormControl>
-
-                {
-                    this.state.editMode &&
-                    <FormControl style={{ marginTop: 16 }}>
-                        <InputLabel id="status-label">Status</InputLabel>
-                        <Select
-                            labelId="status-label"
-                            value={this.state.editableItem.status}
-                            onChange={event => this.setState({ editableItem: { ...this.state.editableItem, status: event.target.value } })}
-                        >
-                            <MenuItem value={'Open'}>Open</MenuItem>
-                            <MenuItem value={'Close'}>Close</MenuItem>
-                            <MenuItem value={'Delayed'}>Delayed</MenuItem>
-                        </Select>
-                    </FormControl>
-
-                }
-           
-
-        <Autocomplete
-          style={{ marginTop: 16 }}
-          multiple
-          options={this.state.accountObjects}
-          getOptionLabel={(option) => option['name']}
-          value={this.state.editableItem.accounts}
-          onChange={(event, value) =>
-            this.setState({
-              editableItem: { ...this.state.editableItem, accounts: value },
-            })
-          }
-          renderInput={(params) => (
-            <TextField {...params} variant='standard' label='accounts' />
-          )}
-        />
-
-        <TextField
-          style={{ marginTop: 16 }}
-          label='Targets'
-          value={this.state.editableItem.targets.join(',')}
-          onChange={(event) =>
-            this.setState({
-              editableItem: {
-                ...this.state.editableItem,
-                targets: event.target.value.split(','),
-              },
-            })
-          }
-        />
- */}
+       
         <Button
           variant='contained'
           color='primary'
@@ -492,7 +1043,7 @@ class Cases extends React.Component {
           {this.state.editMode ? 'Update' : 'Create'}
         </Button>
       </Drawer>
-    );
+    ); */
   }
 
   componentDidMount() {

@@ -1,40 +1,50 @@
 import {
-    Button, Card,
-    CardContent, Chip, Drawer,
-    FormControl,
-    Grid,
-    InputLabel,
-    MenuItem,
-    Paper, Select,
-    TextField,
-    Typography,
-    withStyles
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Drawer,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography,
+  Dialog,
+  AppBar,
+  Toolbar,
+  DialogContent,
+  IconButton,
+  withStyles,
 } from '@material-ui/core';
 import {
-    Add,
-    AddBox,
-    ArrowDownward,
-    Check,
-    ChevronLeft,
-    ChevronRight,
-    Clear,
-    Delete,
-    DeleteOutline,
-    Edit,
-    FilterList,
-    FirstPage,
-    LastPage,
-    Remove,
-    SaveAlt,
-    Search,
-    ViewColumn
+  Add,
+  AddBox,
+  ArrowDownward,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clear,
+  Delete,
+  DeleteOutline,
+  Edit,
+  FilterList,
+  FirstPage,
+  LastPage,
+  Remove,
+  SaveAlt,
+  Search,
+  ViewColumn,
 } from '@material-ui/icons';
 import { Autocomplete } from '@material-ui/lab';
-import MaterialTable from "material-table";
-import MomentUtils from "@date-io/moment";
+import MaterialTable from 'material-table';
+import CloseIcon from '@material-ui/icons/Close';
+import MomentUtils from '@date-io/moment';
 import {
-    MuiPickersUtilsProvider,
-    KeyboardDatePicker,
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
 } from '@material-ui/pickers';
 import axios from 'axios';
 import moment from 'moment';
@@ -43,599 +53,926 @@ import React, { forwardRef } from 'react';
 import { drawerWidth, apiHost } from '../../../config';
 
 const tableIcons = {
-    Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
-    Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
-    Clear: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-    Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
-    DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
-    Export: forwardRef((props, ref) => <SaveAlt {...props} ref={ref} />),
-    Filter: forwardRef((props, ref) => <FilterList {...props} ref={ref} />),
-    FirstPage: forwardRef((props, ref) => <FirstPage {...props} ref={ref} />),
-    LastPage: forwardRef((props, ref) => <LastPage {...props} ref={ref} />),
-    NextPage: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    PreviousPage: forwardRef((props, ref) => <ChevronLeft {...props} ref={ref} />),
-    ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-    Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
-    SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
-    ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-    ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
+  Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
+  Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
+  Clear: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
+  Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
+  DetailPanel: forwardRef((props, ref) => (
+    <ChevronRight {...props} ref={ref} />
+  )),
+  Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
+  Export: forwardRef((props, ref) => <SaveAlt {...props} ref={ref} />),
+  Filter: forwardRef((props, ref) => <FilterList {...props} ref={ref} />),
+  FirstPage: forwardRef((props, ref) => <FirstPage {...props} ref={ref} />),
+  LastPage: forwardRef((props, ref) => <LastPage {...props} ref={ref} />),
+  NextPage: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
+  PreviousPage: forwardRef((props, ref) => (
+    <ChevronLeft {...props} ref={ref} />
+  )),
+  ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
+  Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
+  SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
+  ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
+  ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
 };
-
 
 const styles = (theme) => ({
-    chip: {
-        margin: theme.spacing(0.5),
-    },
-    drawer: {
-        width: drawerWidth,
-        flexShrink: 0,
-    },
-    drawerPaper: {
-        width: drawerWidth,
-        padding: theme.spacing(4),
-    },
+  chip: {
+    margin: theme.spacing(0.5),
+  },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0,
+  },
+  drawerPaper: {
+    width: '60%',
+
+    align: 'center',
+  },
+  title: {
+    padding: 10,
+  },
 });
-
-
 class CaseIntel extends React.Component {
-    constructor(props) {
-        super(props);
-        this.getDrawer = this.getDrawer.bind(this);
-        this.getCaseSelectionComponent = this.getCaseSelectionComponent.bind(this);
-        this.getCaseMetadataComponent = this.getCaseMetadataComponent.bind(this);
-        this.getJobsTableComponent = this.getJobsTableComponent.bind(this);
-        this.getAllCases = this.getAllCases.bind(this);
-        this.resetToDefault = this.resetToDefault.bind(this);
-        this.getAllAccounts = this.getAllAccounts.bind(this);
-        this.fetchJobsForCase = this.fetchJobsForCase.bind(this);
-        this.onCreateJobButtonPress = this.onCreateJobButtonPress.bind(this);
-        this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
-    }
+  constructor(props) {
+    super(props);
+    this.getDrawer = this.getDrawer.bind(this);
+    this.getCaseSelectionComponent = this.getCaseSelectionComponent.bind(this);
+    this.getCaseMetadataComponent = this.getCaseMetadataComponent.bind(this);
+    this.getJobsTableComponent = this.getJobsTableComponent.bind(this);
+    this.getAllCases = this.getAllCases.bind(this);
+    this.resetToDefault = this.resetToDefault.bind(this);
+    this.getAllAccounts = this.getAllAccounts.bind(this);
+    this.fetchJobsForCase = this.fetchJobsForCase.bind(this);
+    this.onCreateJobButtonPress = this.onCreateJobButtonPress.bind(this);
+    this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
+  }
 
-    state = {
-        drawerOpen: false,
-        editMode: false,
-        selectedCase: null,
-        accountIdNameLookupMap: {},
-        cases: [],
-        selectedCaseJobsList: [],
-        newJob: {
-            id: -1,
-            case: -1,
-            category: 'IMSI',
-            status: '',
-            latitude: -1,
-            longitude: -1,
-            distance: -1,
-            lac: -1,
-            cellId: -1,
-            startTime: new Date(),
-            endTime: new Date(),
-            query: '',
-        }
-    }
+  state = {
+    drawerOpen: false,
+    editMode: false,
+    selectedCase: null,
+    accountIdNameLookupMap: {},
+    cases: [],
+    selectedCaseJobsList: [],
+    newJob: {
+      id: -1,
+      case: -1,
+      category: 'IMSI',
+      status: '',
+      latitude: -1,
+      longitude: -1,
+      distance: -1,
+      lac: -1,
+      cellId: -1,
+      startTime: new Date(),
+      endTime: new Date(),
+      query: '',
+    },
+  };
+  handleClose1 = () => {
+    this.setState({
+      drawerOpen: false,
+    });
+  };
+  render() {
+    const { classes } = this.props;
 
-    render() {
-        const {
-            classes
-        } = this.props;
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        {this.state.selectedCase && this.getDrawer()}
 
-        return (
-            <div style={{ paddingBottom: 32 }}>
-                {this.state.selectedCase && this.getDrawer()}
+        {this.getCaseSelectionComponent()}
 
-                {this.getCaseSelectionComponent()}
-
-                {
-                    this.state.selectedCase ?
-                        <Grid container>
-                            <Grid item md={1} style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}>
-                                <span
-                                    style={{ fontSize: 42, }}
-                                    onClick={
-                                        () => this.setState({
-                                            drawerOpen: true,
-                                        })
-                                    }
-                                >
-                                    C<br />
-                                    R<br />
-                                    E<br />
-                                    A<br />
-                                    T<br />
-                                    E<br />
-                                </span>
-                            </Grid>
-
-                            <Grid item md={11}>
-                                {this.getCaseMetadataComponent()}
-
-                                {this.getJobsTableComponent()}
-                            </Grid>
-                        </Grid>
-                        : <div />
-                }
-
-            </div>
-        );
-    }
-
-    getDrawer() {
-        const {
-            classes
-        } = this.props;
-
-        return (
-            <Drawer
-                anchor={this.state.drawerPosition}
-                className={classes.drawer}
-                classes={{
-                    paper: classes.drawerPaper,
-                }}
-                open={this.state.drawerOpen}
-                onClose={this.resetToDefault}
+        {this.state.selectedCase ? (
+          <Grid container>
+            <Grid
+              item
+              style={{
+                textAlign: 'center',
+                marginTop: window.innerHeight / 1500,
+                width: 45,
+                height: window.innerHeight,
+                backgroundColor: '#18202c',
+              }}
+              onClick={() =>
+                this.setState({
+                  drawerOpen: true,
+                })
+              }
             >
+              <span style={{ fontSize: 21, color: 'white' }}>
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                C<br />
+                R<br />
+                E<br />
+                A<br />
+                T<br />
+                E<br />
+              </span>
+            </Grid>
+            <Grid style={{ padding: 0, width: 36 }}></Grid>
+            <Grid item md={11}>
+              {this.getCaseMetadataComponent()}
 
-                <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
-                    Create Job
-                </Typography>
+              {this.getJobsTableComponent()}
+            </Grid>
+          </Grid>
+        ) : (
+          <div />
+        )}
+      </div>
+    );
+  }
 
-                <FormControl style={{ marginTop: 16 }}>
-                    <InputLabel id="category-label">Category</InputLabel>
-                    <Select
-                        labelId="category-label"
-                        value={this.state.newJob.category}
-                        onChange={event => this.setState({ newJob: { ...this.state.newJob, category: event.target.value } })}
-                    >
-                        <MenuItem value={'IMSI'}>IMSI</MenuItem>
-                        <MenuItem value={'IMEI'}>IMEI</MenuItem>
-                        <MenuItem value={'MSISDN'}>MSISDN</MenuItem>
-                        <MenuItem value={'Location'}>Location</MenuItem>
-                        <MenuItem value={'LAC/Cell-ID'} >LAC/Cell-ID</MenuItem>
-                    </Select>
-                </FormControl>
+  getDrawer() {
+    const { classes } = this.props;
 
-                <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <KeyboardDatePicker
-                        style={{ marginTop: 16 }}
-                        disableToolbar
-                        variant="inline"
-                        margin="normal"
-                        format="DD/MM/yyyy"
-                        openTo="year"
-                        label="Query Start Date"
-                        value={this.state.newJob.startTime}
-                        onChange={newDate => this.setState({ newJob: { ...this.state.newJob, startTime: newDate } })}
-                    />
-                </MuiPickersUtilsProvider>
-
-                <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <KeyboardDatePicker
-                        style={{ marginTop: 16 }}
-                        disableToolbar
-                        variant="inline"
-                        margin="normal"
-                        openTo="year"
-                        format="DD/MM/yyyy"
-                        label="Query End Date"
-                        value={this.state.newJob.endTime}
-                        onChange={newDate => this.setState({ newJob: { ...this.state.newJob, endTime: newDate } })}
-                    />
-                </MuiPickersUtilsProvider>
-
-
-                {
-                    this.state.newJob.category === 'Location' &&
-                    <TextField
-                        style={{ marginTop: 16 }}
-                        label="Query Location (Latitude)"
-                        type="number"
-                        value={this.state.newJob.latitude === -1 ? '' : this.state.newJob.latitude}
-                        onChange={event => this.setState({ newJob: { ...this.state.newJob, latitude: event.target.value } })}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                    />
-                }
-
-                {
-                    this.state.newJob.category === 'Location' &&
-                    <TextField
-                        style={{ marginTop: 16 }}
-                        label="Query Location (Longitude)"
-                        type="number"
-                        value={this.state.newJob.longitude === -1 ? '' : this.state.newJob.longitude}
-                        onChange={event => this.setState({ newJob: { ...this.state.newJob, longitude: event.target.value } })}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                    />
-                }
-
-                {
-                    this.state.newJob.category === 'LAC/Cell-ID' &&
-                    <TextField
-                        style={{ marginTop: 16 }}
-                        label="Query LAC"
-                        type="number"
-                        value={this.state.newJob.lac === -1 ? '' : this.state.newJob.lac}
-                        onChange={event => this.setState({ newJob: { ...this.state.newJob, lac: event.target.value } })}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                    />
-                }
-
-                {
-                    this.state.newJob.category === 'LAC/Cell-ID' &&
-                    <TextField
-                        style={{ marginTop: 16 }}
-                        label="Query Cell-ID"
-                        type="number"
-                        value={this.state.newJob.cellId === -1 ? '' : this.state.newJob.cellId}
-                        onChange={event => this.setState({ newJob: { ...this.state.newJob, cellId: event.target.value } })}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                    />
-                }
-
-                {
-                    (this.state.newJob.category === 'Location' || this.state.newJob.category === 'LAC/Cell-ID') &&
-                    <TextField
-                        style={{ marginTop: 16 }}
-                        label="Query Distance"
-                        type="number"
-                        value={this.state.newJob.distance === -1 ? '' : this.state.newJob.distance}
-                        onChange={event => this.setState({ newJob: { ...this.state.newJob, distance: event.target.value } })}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                    />
-                }
-
-                {
-                    (this.state.newJob.category === 'IMSI' || this.state.newJob.category === 'IMEI' || this.state.newJob.category === 'MSISDN') &&
-                    <FormControl variant="outlined" style={{ marginTop: 16 }}>
-                        <InputLabel id="target-selector-label">Query</InputLabel>
-                        <Select
-                            labelId="target-selector-label"
-                            value={this.state.newJob.query}
-                            onChange={event => this.setState({ newJob: { ...this.state.newJob, query: event.target.value } })}
-                            label="Age"
-                        >
-                            {
-                                this.state.selectedCase['targets'].map(target => <MenuItem key={target} value={target}>{target}</MenuItem>)
-                            }
-                        </Select>
-                    </FormControl>
-                }
-
-                <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    style={{ marginTop: 32 }}
-                    startIcon={<Add />}
-                    onClick={this.onCreateJobButtonPress}
+    return (
+      <Dialog
+        aria-labelledby='customized-dialog-title'
+        open={this.state.drawerOpen}
+        onClose={this.handleClose1}
+        //className={classes.drawer}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+      >
+        <AppBar position='static' style={{ backgroundColor: '#18202c' }}>
+          <Toolbar>
+            <Grid
+              justify='space-between' // Add it here :)
+              container
+              spacing={20}
+            >
+              <Grid item>
+                <Typography
+                  component='h5'
+                  variant='h5'
+                  className={classes.title}
                 >
-                    Create
-                </Button>
-            </Drawer>
-        );
-    }
+                  Create Job
+                </Typography>
+              </Grid>
+              <Grid item>
+                <IconButton
+                  aria-label='close'
+                  className={classes.closeButton}
+                  onClick={this.handleClose1}
+                  color='inherit'
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </Toolbar>
+        </AppBar>
 
-
-    getCaseSelectionComponent() {
-        return (
-            <Autocomplete
-                style={{ marginTop: 16, marginLeft: 16, marginRight: 16 }}
-                options={this.state.cases}
-                getOptionLabel={(option) => `Case ${option.id} - ${option.name}`}
-                value={this.state.selectedCase}
-                onChange={(event, value) => this.fetchJobsForCase(value)}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        variant="standard"
-                        label="Cases"
-                        placeholder="Select Case by entering ID or name"
-                    />
-                )}
-            />
-        );
-    }
-
-    getCaseMetadataComponent() {
-        const {
-            classes
-        } = this.props;
-
-        return (
-            <Card
-                elevation={4}
-                style={{ marginTop: 32, marginRight: 16 }}
+        <DialogContent>
+          <FormControl style={{ marginTop: 16, minWidth: 548 }}>
+            <InputLabel id='category-label'>Category</InputLabel>
+            <Select
+              labelId='category-label'
+              value={this.state.newJob.category}
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    category: event.target.value,
+                  },
+                })
+              }
             >
-                <CardContent>
-                    <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
-                        Case Summary
-                    </Typography>
+              <MenuItem value={'IMSI'}>IMSI</MenuItem>
+              <MenuItem value={'IMEI'}>IMEI</MenuItem>
+              <MenuItem value={'MSISDN'}>MSISDN</MenuItem>
+              <MenuItem value={'Location'}>Location</MenuItem>
+              <MenuItem value={'LAC/Cell-ID'}>LAC/Cell-ID</MenuItem>
+            </Select>
+          </FormControl>
+          <br />
 
-                    <b>ID: </b>
-                    {
-                        this.state.selectedCase ? this.state.selectedCase.id : ''
-                    }
-                    <br />
-
-                    <b>Name: </b>
-                    {
-                        this.state.selectedCase ? this.state.selectedCase.name : ''
-                    }
-                    <br />
-
-                    <b>Description: </b>
-                    {
-
-                        this.state.selectedCase ? this.state.selectedCase.description : ''
-                    }
-                    <br />
-
-                    <b>Category: </b>
-                    {
-
-                        this.state.selectedCase ? this.state.selectedCase.category : ''
-                    }
-                    <br />
-
-                    <b>Status: </b>
-                    {
-                        this.state.selectedCase ?
-                            <span style={{ color: this.state.selectedCase.status === 'Open' ? 'green' : 'red' }}>
-                                {this.state.selectedCase.status}
-                            </span>
-                            : ''
-                    }
-                    <br />
-
-                    <div style={{ marginTop: 16 }} />
-
-                    <b>Users: </b>
-                    {
-                        this.state.selectedCase ?
-                            this.state.selectedCase.accounts.map((accountId, index) =>
-                                <Chip
-                                    key={index}
-                                    label={this.state.accountIdNameLookupMap[accountId]}
-                                    className={classes.chip}
-                                />
-                            )
-                            : ''
-                    }
-                    <br />
-
-                    <b>Targets: </b>
-                    {
-                        this.state.selectedCase ?
-                            this.state.selectedCase.targets.map((target, index) =>
-                                <Chip
-                                    key={index}
-                                    label={target}
-                                    className={classes.chip}
-                                />
-                            )
-                            : ''
-                    }
-                    <br />
-                </CardContent>
-            </Card>
-        );
-    }
-
-    getJobsTableComponent() {
-        const {
-            classes,
-        } = this.props;
-
-        return (
-            <MaterialTable
-                icons={tableIcons}
-                style={{ marginTop: 32, marginRight: 16 }}
-                components={{
-                    Container: props => <Paper {...props} elevation={4} />
-                }}
-                options={{
-                    grouping: false,
-                    exportButton: true,
-                    paging: false,
-                    actionsColumnIndex: -1,
-                }}
-                columns={[
-                    { title: "ID", field: "id", type: "numeric", align: "left", width: 16 },
-                    { title: "Category", field: "category" },
-                    {
-                        title: "Query",
-                        field: "query",
-                        render: rowData => {
-                            let jobCategory = rowData['category'];
-                            let resultantHtmlElement = null;
-                            if (jobCategory === 'Location') {
-                                let queryArr = rowData['query'].split(',');
-                                resultantHtmlElement = <span>
-                                    <b>Latitude: </b>{queryArr[0]}<br />
-                                    <b>Longitude: </b>{queryArr[1]}<br />
-                                    <b>Distance: </b>{queryArr[2]}<br />
-                                </span>;
-                            }
-                            else if (jobCategory === 'LAC/Cell-ID') {
-                                let queryArr = rowData['query'].split(',');
-                                resultantHtmlElement = <span>
-                                    <b>LAC: </b>{queryArr[0]}<br />
-                                    <b>Cell-ID: </b>{queryArr[1]}<br />
-                                    <b>Distance: </b>{queryArr[2]}<br />
-                                </span>;
-                            }
-                            else resultantHtmlElement = rowData['query'];
-                            return resultantHtmlElement;
-                        }
-                    },
-                    {
-                        title: "Status",
-                        field: "status",
-                        render: rowData =>
-                            <span style={{ color: rowData.status === 'PENDING' ? 'red' : 'green' }}>
-                                {rowData.status}
-                            </span>
-                    },
-                    {
-                        title: "Start Time",
-                        field: "startTime",
-                        align: "center",
-                        render: rowData => moment(rowData['startTime']).format('L'),
-                        grouping: false,
-                    },
-                    {
-                        title: "End Time",
-                        field: "endTime",
-                        align: "center",
-                        render: rowData => moment(rowData['endTime']).format('L'),
-                        grouping: false,
-                    },
-                ]}
-                data={this.state.selectedCaseJobsList}
-                title='Jobs List'
-                actions={[
-                    {
-                        icon: () => <Delete color='error' />,
-                        tooltip: 'Delete Job',
-                        onClick: (event, rowData) => {
-                            // Do Delete operation
-                            this.onDeleteButtonPress(rowData);
-                        },
-                    }
-                ]}
+          <MuiPickersUtilsProvider utils={MomentUtils}>
+            <KeyboardDatePicker
+              style={{ marginTop: 16, minWidth: 548 }}
+              disableToolbar
+              variant='inline'
+              margin='normal'
+              format='DD/MM/yyyy'
+              openTo='year'
+              label='Query Start Date'
+              value={this.state.newJob.startTime}
+              onChange={(newDate) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, startTime: newDate },
+                })
+              }
             />
-        );
-    }
+          </MuiPickersUtilsProvider>
+          <br />
 
-    componentDidMount() {
-        this.getAllAccounts();
-        this.getAllCases();
-    }
+          <MuiPickersUtilsProvider utils={MomentUtils}>
+            <KeyboardDatePicker
+              style={{ marginTop: 16, minWidth: 548 }}
+              disableToolbar
+              variant='inline'
+              margin='normal'
+              openTo='year'
+              format='DD/MM/yyyy'
+              label='Query End Date'
+              value={this.state.newJob.endTime}
+              onChange={(newDate) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, endTime: newDate },
+                })
+              }
+            />
+          </MuiPickersUtilsProvider>
+          <br />
 
-    resetToDefault() {
-        this.setState({
-            drawerOpen: false,
-            editMode: false,
-            newJob: {
-                id: -1,
-                case: -1,
-                category: 'IMSI',
-                status: '',
-                latitude: -1,
-                longitude: -1,
-                distance: -1,
-                lac: -1,
-                cellId: -1,
-                startTime: new Date(),
-                endTime: new Date(),
-                query: '',
+          {this.state.newJob.category === 'Location' && (
+            <TextField
+              style={{ marginTop: 16 }}
+              fullWidth
+              label='Query Location (Latitude)'
+              type='number'
+              value={
+                this.state.newJob.latitude === -1
+                  ? ''
+                  : this.state.newJob.latitude
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    latitude: event.target.value,
+                  },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {this.state.newJob.category === 'Location' && (
+            <TextField
+              style={{ marginTop: 16 }}
+              fullWidth
+              label='Query Location (Longitude)'
+              type='number'
+              value={
+                this.state.newJob.longitude === -1
+                  ? ''
+                  : this.state.newJob.longitude
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    longitude: event.target.value,
+                  },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {this.state.newJob.category === 'LAC/Cell-ID' && (
+            <TextField
+              fullWidth
+              style={{ marginTop: 16 }}
+              label='Query LAC'
+              type='number'
+              value={this.state.newJob.lac === -1 ? '' : this.state.newJob.lac}
+              onChange={(event) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, lac: event.target.value },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+          <br />
+          {this.state.newJob.category === 'LAC/Cell-ID' && (
+            <TextField
+              style={{ marginTop: 16 }}
+              fullWidth
+              label='Query Cell-ID'
+              type='number'
+              value={
+                this.state.newJob.cellId === -1 ? '' : this.state.newJob.cellId
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, cellId: event.target.value },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {(this.state.newJob.category === 'Location' ||
+            this.state.newJob.category === 'LAC/Cell-ID') && (
+            <TextField
+              fullWidth
+              style={{ marginTop: 16 }}
+              label='Query Distance'
+              type='number'
+              value={
+                this.state.newJob.distance === -1
+                  ? ''
+                  : this.state.newJob.distance
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    distance: event.target.value,
+                  },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {(this.state.newJob.category === 'IMSI' ||
+            this.state.newJob.category === 'IMEI' ||
+            this.state.newJob.category === 'MSISDN') && (
+            <FormControl
+              variant='outlined'
+              style={{ marginTop: 16, minWidth: 548 }}
+            >
+              <InputLabel id='target-selector-label'>Query</InputLabel>
+              <Select
+                labelId='target-selector-label'
+                value={this.state.newJob.query}
+                onChange={(event) =>
+                  this.setState({
+                    newJob: { ...this.state.newJob, query: event.target.value },
+                  })
+                }
+                label='Age'
+              >
+                {this.state.selectedCase['targets'].map((target) => (
+                  <MenuItem key={target} value={target}>
+                    {target}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+
+          <Button
+            variant='contained'
+            color='primary'
+            fullWidth
+            style={{ marginTop: 32 }}
+            startIcon={<Add />}
+            onClick={this.onCreateJobButtonPress}
+          >
+            Create
+          </Button>
+        </DialogContent>
+      </Dialog>
+      /* <Drawer
+        anchor={this.state.drawerPosition}
+        className={classes.drawer}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+        open={this.state.drawerOpen}
+        onClose={this.resetToDefault}
+      >
+        <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
+          Create Job
+        </Typography>
+
+        <FormControl style={{ marginTop: 16 }}>
+          <InputLabel id='category-label'>Category</InputLabel>
+          <Select
+            labelId='category-label'
+            value={this.state.newJob.category}
+            onChange={(event) =>
+              this.setState({
+                newJob: { ...this.state.newJob, category: event.target.value },
+              })
             }
-        });
-    }
+          >
+            <MenuItem value={'IMSI'}>IMSI</MenuItem>
+            <MenuItem value={'IMEI'}>IMEI</MenuItem>
+            <MenuItem value={'MSISDN'}>MSISDN</MenuItem>
+            <MenuItem value={'Location'}>Location</MenuItem>
+            <MenuItem value={'LAC/Cell-ID'}>LAC/Cell-ID</MenuItem>
+          </Select>
+        </FormControl>
 
-
-    async getAllAccounts() {
-        try {
-            const apiEndpoint = apiHost + '/accounts/';
-            let response = await axios.get(apiEndpoint);
-            response = response.data;
-
-            let accountIdNameLookupMap = {};
-
-            response.forEach(account => {
-                let accountId = account['id'];
-                let accountName = account['name'];
-                accountIdNameLookupMap[accountId] = accountName;
-            });
-
-
-            this.setState({
-                accountIdNameLookupMap: accountIdNameLookupMap,
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-
-    async getAllCases() {
-        try {
-            const apiEndpoint = apiHost + '/cases/';
-            let response = await axios.get(apiEndpoint);
-            response = response.data;
-            response = response.filter((caseItem, index) => caseItem['name'] !== 'DEFAULT_CASE_CHECK_OT');
-            this.setState({ cases: response });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    async fetchJobsForCase(selectedCase) {
-        try {
-            this.setState({ selectedCase: selectedCase });
-            const apiEndpoint = apiHost + '/jobs/?case=' + selectedCase.id;
-            let response = await axios.get(apiEndpoint);
-            response = response.data;
-            this.setState({ selectedCaseJobsList: response });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    async onCreateJobButtonPress() {
-        try {
-            const apiEndpoint = apiHost + '/jobs/';
-            let payload = this.state.newJob;
-            if (payload.category === 'Location') {
-                payload['query'] = payload['latitude'] + ',' + payload['longitude'] + ',' + payload['distance'];
-                delete payload['latitude'];
-                delete payload['longitude'];
-                delete payload['distance'];
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <KeyboardDatePicker
+            style={{ marginTop: 16 }}
+            disableToolbar
+            variant='inline'
+            margin='normal'
+            format='DD/MM/yyyy'
+            openTo='year'
+            label='Query Start Date'
+            value={this.state.newJob.startTime}
+            onChange={(newDate) =>
+              this.setState({
+                newJob: { ...this.state.newJob, startTime: newDate },
+              })
             }
-            else if (payload.category === 'LAC/Cell-ID') {
-                payload['query'] = payload['lac'] + ',' + payload['cellId'] + ',' + payload['distance'];
-                delete payload['lac'];
-                delete payload['cellId'];
-                delete payload['distance'];
+          />
+        </MuiPickersUtilsProvider>
+
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <KeyboardDatePicker
+            style={{ marginTop: 16 }}
+            disableToolbar
+            variant='inline'
+            margin='normal'
+            openTo='year'
+            format='DD/MM/yyyy'
+            label='Query End Date'
+            value={this.state.newJob.endTime}
+            onChange={(newDate) =>
+              this.setState({
+                newJob: { ...this.state.newJob, endTime: newDate },
+              })
             }
-            payload['status'] = 'PENDING';
-            payload['startTime'] = payload['startTime'].valueOf();
-            payload['endTime'] = payload['endTime'].valueOf();
-            payload['case'] = this.state.selectedCase['id'];
-            console.log(payload);
+          />
+        </MuiPickersUtilsProvider>
 
-            let response = await axios.post(apiEndpoint, payload);
-            response = response.data;
-            console.log(response);
-            this.resetToDefault();
-            this.fetchJobsForCase(this.state.selectedCase);
-        } catch (error) {
-            console.log(error);
-        }
-    }
+        {this.state.newJob.category === 'Location' && (
+          <TextField
+            style={{ marginTop: 16 }}
+            label='Query Location (Latitude)'
+            type='number'
+            value={
+              this.state.newJob.latitude === -1
+                ? ''
+                : this.state.newJob.latitude
+            }
+            onChange={(event) =>
+              this.setState({
+                newJob: { ...this.state.newJob, latitude: event.target.value },
+              })
+            }
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        )}
 
-    async onDeleteButtonPress(rowData) {
-        try {
-            const apiEndpoint = apiHost + '/jobs/' + rowData.id + '/';
-            let response = await axios.delete(apiEndpoint);
-            response = response.data;
-            this.resetToDefault();
-            this.fetchJobsForCase(this.state.selectedCase);
-        } catch (error) {
-            console.log(error);
-        }
+        {this.state.newJob.category === 'Location' && (
+          <TextField
+            style={{ marginTop: 16 }}
+            label='Query Location (Longitude)'
+            type='number'
+            value={
+              this.state.newJob.longitude === -1
+                ? ''
+                : this.state.newJob.longitude
+            }
+            onChange={(event) =>
+              this.setState({
+                newJob: { ...this.state.newJob, longitude: event.target.value },
+              })
+            }
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        )}
+
+        {this.state.newJob.category === 'LAC/Cell-ID' && (
+          <TextField
+            style={{ marginTop: 16 }}
+            label='Query LAC'
+            type='number'
+            value={this.state.newJob.lac === -1 ? '' : this.state.newJob.lac}
+            onChange={(event) =>
+              this.setState({
+                newJob: { ...this.state.newJob, lac: event.target.value },
+              })
+            }
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        )}
+
+        {this.state.newJob.category === 'LAC/Cell-ID' && (
+          <TextField
+            style={{ marginTop: 16 }}
+            label='Query Cell-ID'
+            type='number'
+            value={
+              this.state.newJob.cellId === -1 ? '' : this.state.newJob.cellId
+            }
+            onChange={(event) =>
+              this.setState({
+                newJob: { ...this.state.newJob, cellId: event.target.value },
+              })
+            }
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        )}
+
+        {(this.state.newJob.category === 'Location' ||
+          this.state.newJob.category === 'LAC/Cell-ID') && (
+          <TextField
+            style={{ marginTop: 16 }}
+            label='Query Distance'
+            type='number'
+            value={
+              this.state.newJob.distance === -1
+                ? ''
+                : this.state.newJob.distance
+            }
+            onChange={(event) =>
+              this.setState({
+                newJob: { ...this.state.newJob, distance: event.target.value },
+              })
+            }
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        )}
+
+        {(this.state.newJob.category === 'IMSI' ||
+          this.state.newJob.category === 'IMEI' ||
+          this.state.newJob.category === 'MSISDN') && (
+          <FormControl variant='outlined' style={{ marginTop: 16 }}>
+            <InputLabel id='target-selector-label'>Query</InputLabel>
+            <Select
+              labelId='target-selector-label'
+              value={this.state.newJob.query}
+              onChange={(event) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, query: event.target.value },
+                })
+              }
+              label='Age'
+            >
+              {this.state.selectedCase['targets'].map((target) => (
+                <MenuItem key={target} value={target}>
+                  {target}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
+        <Button
+          variant='contained'
+          color='primary'
+          fullWidth
+          style={{ marginTop: 32 }}
+          startIcon={<Add />}
+          onClick={this.onCreateJobButtonPress}
+        >
+          Create
+        </Button>
+      </Drawer> */
+    );
+  }
+
+  getCaseSelectionComponent() {
+    return (
+      <Autocomplete
+        style={{ marginTop: 16, marginLeft: 16, marginRight: 16 }}
+        options={this.state.cases}
+        getOptionLabel={(option) => `Case ${option.id} - ${option.name}`}
+        value={this.state.selectedCase}
+        onChange={(event, value) => this.fetchJobsForCase(value)}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant='standard'
+            label='Cases'
+            placeholder='Select Case by entering ID or name'
+          />
+        )}
+      />
+    );
+  }
+
+  getCaseMetadataComponent() {
+    const { classes } = this.props;
+
+    return (
+      <Card elevation={4} style={{ marginTop: 32, marginRight: 16 }}>
+        <CardContent>
+          <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
+            Case Summary
+          </Typography>
+
+          <b>ID: </b>
+          {this.state.selectedCase ? this.state.selectedCase.id : ''}
+          <br />
+
+          <b>Name: </b>
+          {this.state.selectedCase ? this.state.selectedCase.name : ''}
+          <br />
+
+          <b>Description: </b>
+          {this.state.selectedCase ? this.state.selectedCase.description : ''}
+          <br />
+
+          <b>Category: </b>
+          {this.state.selectedCase ? this.state.selectedCase.category : ''}
+          <br />
+
+          <b>Status: </b>
+          {this.state.selectedCase ? (
+            <span
+              style={{
+                color:
+                  this.state.selectedCase.status === 'Open' ? 'green' : 'red',
+              }}
+            >
+              {this.state.selectedCase.status}
+            </span>
+          ) : (
+            ''
+          )}
+          <br />
+
+          <div style={{ marginTop: 16 }} />
+
+          <b>Users: </b>
+          {this.state.selectedCase
+            ? this.state.selectedCase.accounts.map((accountId, index) => (
+                <Chip
+                  key={index}
+                  label={this.state.accountIdNameLookupMap[accountId]}
+                  className={classes.chip}
+                />
+              ))
+            : ''}
+          <br />
+
+          <b>Targets: </b>
+          {this.state.selectedCase
+            ? this.state.selectedCase.targets.map((target, index) => (
+                <Chip key={index} label={target} className={classes.chip} />
+              ))
+            : ''}
+          <br />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  getJobsTableComponent() {
+    const { classes } = this.props;
+
+    return (
+      <MaterialTable
+        icons={tableIcons}
+        style={{ marginTop: 32, marginRight: 16 }}
+        components={{
+          Container: (props) => <Paper {...props} elevation={4} />,
+        }}
+        options={{
+          grouping: false,
+          exportButton: true,
+          paging: false,
+          actionsColumnIndex: -1,
+        }}
+        columns={[
+          {
+            title: 'ID',
+            field: 'id',
+            type: 'numeric',
+            align: 'left',
+            width: 16,
+          },
+          { title: 'Category', field: 'category' },
+          {
+            title: 'Query',
+            field: 'query',
+            render: (rowData) => {
+              let jobCategory = rowData['category'];
+              let resultantHtmlElement = null;
+              if (jobCategory === 'Location') {
+                let queryArr = rowData['query'].split(',');
+                resultantHtmlElement = (
+                  <span>
+                    <b>Latitude: </b>
+                    {queryArr[0]}
+                    <br />
+                    <b>Longitude: </b>
+                    {queryArr[1]}
+                    <br />
+                    <b>Distance: </b>
+                    {queryArr[2]}
+                    <br />
+                  </span>
+                );
+              } else if (jobCategory === 'LAC/Cell-ID') {
+                let queryArr = rowData['query'].split(',');
+                resultantHtmlElement = (
+                  <span>
+                    <b>LAC: </b>
+                    {queryArr[0]}
+                    <br />
+                    <b>Cell-ID: </b>
+                    {queryArr[1]}
+                    <br />
+                    <b>Distance: </b>
+                    {queryArr[2]}
+                    <br />
+                  </span>
+                );
+              } else resultantHtmlElement = rowData['query'];
+              return resultantHtmlElement;
+            },
+          },
+          {
+            title: 'Status',
+            field: 'status',
+            render: (rowData) => (
+              <span
+                style={{
+                  color: rowData.status === 'PENDING' ? 'red' : 'green',
+                }}
+              >
+                {rowData.status}
+              </span>
+            ),
+          },
+          {
+            title: 'Start Time',
+            field: 'startTime',
+            align: 'center',
+            render: (rowData) => moment(rowData['startTime']).format('L'),
+            grouping: false,
+          },
+          {
+            title: 'End Time',
+            field: 'endTime',
+            align: 'center',
+            render: (rowData) => moment(rowData['endTime']).format('L'),
+            grouping: false,
+          },
+        ]}
+        data={this.state.selectedCaseJobsList}
+        title='Jobs List'
+        actions={[
+          {
+            icon: () => <Delete color='error' />,
+            tooltip: 'Delete Job',
+            onClick: (event, rowData) => {
+              // Do Delete operation
+              this.onDeleteButtonPress(rowData);
+            },
+          },
+        ]}
+      />
+    );
+  }
+
+  componentDidMount() {
+    this.getAllAccounts();
+    this.getAllCases();
+  }
+
+  resetToDefault() {
+    this.setState({
+      drawerOpen: false,
+      editMode: false,
+      newJob: {
+        id: -1,
+        case: -1,
+        category: 'IMSI',
+        status: '',
+        latitude: -1,
+        longitude: -1,
+        distance: -1,
+        lac: -1,
+        cellId: -1,
+        startTime: new Date(),
+        endTime: new Date(),
+        query: '',
+      },
+    });
+  }
+
+  async getAllAccounts() {
+    try {
+      const apiEndpoint = apiHost + '/accounts/';
+      let response = await axios.get(apiEndpoint);
+      response = response.data;
+
+      let accountIdNameLookupMap = {};
+
+      response.forEach((account) => {
+        let accountId = account['id'];
+        let accountName = account['name'];
+        accountIdNameLookupMap[accountId] = accountName;
+      });
+
+      this.setState({
+        accountIdNameLookupMap: accountIdNameLookupMap,
+      });
+    } catch (error) {
+      console.log(error);
     }
-};
+  }
+
+  async getAllCases() {
+    try {
+      const apiEndpoint = apiHost + '/cases/';
+      let response = await axios.get(apiEndpoint);
+      response = response.data;
+      response = response.filter(
+        (caseItem, index) => caseItem['name'] !== 'DEFAULT_CASE_CHECK_OT'
+      );
+      this.setState({ cases: response });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async fetchJobsForCase(selectedCase) {
+    try {
+      this.setState({ selectedCase: selectedCase });
+      const apiEndpoint = apiHost + '/jobs/?case=' + selectedCase.id;
+      let response = await axios.get(apiEndpoint);
+      response = response.data;
+      this.setState({ selectedCaseJobsList: response });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async onCreateJobButtonPress() {
+    try {
+      const apiEndpoint = apiHost + '/jobs/';
+      let payload = this.state.newJob;
+      if (payload.category === 'Location') {
+        payload['query'] =
+          payload['latitude'] +
+          ',' +
+          payload['longitude'] +
+          ',' +
+          payload['distance'];
+        delete payload['latitude'];
+        delete payload['longitude'];
+        delete payload['distance'];
+      } else if (payload.category === 'LAC/Cell-ID') {
+        payload['query'] =
+          payload['lac'] + ',' + payload['cellId'] + ',' + payload['distance'];
+        delete payload['lac'];
+        delete payload['cellId'];
+        delete payload['distance'];
+      }
+      payload['status'] = 'PENDING';
+      payload['startTime'] = payload['startTime'].valueOf();
+      payload['endTime'] = payload['endTime'].valueOf();
+      payload['case'] = this.state.selectedCase['id'];
+      console.log(payload);
+
+      let response = await axios.post(apiEndpoint, payload);
+      response = response.data;
+      console.log(response);
+      this.resetToDefault();
+      this.fetchJobsForCase(this.state.selectedCase);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async onDeleteButtonPress(rowData) {
+    try {
+      const apiEndpoint = apiHost + '/jobs/' + rowData.id + '/';
+      let response = await axios.delete(apiEndpoint);
+      response = response.data;
+      this.resetToDefault();
+      this.fetchJobsForCase(this.state.selectedCase);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
 
 export default withStyles(styles)(CaseIntel);

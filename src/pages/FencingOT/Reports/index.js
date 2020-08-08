@@ -23,6 +23,7 @@ import {
   FormControlLabel,
 } from '@material-ui/core';
 import {
+  Add,
   TableChart,
   Timeline,
   People,
@@ -44,6 +45,11 @@ import {
   Delete,
   Map,
 } from '@material-ui/icons';
+import MomentUtils from '@date-io/moment';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
 import React, { forwardRef } from 'react';
 import MaterialTable from 'material-table';
 import axios from 'axios';
@@ -90,14 +96,15 @@ const styles = (theme) => ({
   chip: {
     margin: theme.spacing(0.5),
   },
-  leftdrawer: { height: window.innerHeight, backgroundColor: '#7395AE' },
-  rightdrawer: { height: window.innerHeight, backgroundColor: '#7395AE' },
+  leftdrawer: { height: window.innerHeight, backgroundColor: '#18202c' },
+  rightdrawer: { height: window.innerHeight, backgroundColor: '#18202c' },
   widgetListItem: {
     marginRight: 24,
   },
   drawercontent: {
     marginTop: -32,
     marginLeft: 40,
+    padding: 18,
   },
   main: {
     height: window.innerHeight,
@@ -118,9 +125,9 @@ class Reports extends React.Component {
   }
 
   state = {
-    leftDrawerOpen: true,
-    rightDrawerOpen: true,
-    activeWidget: 'Handset',
+    leftDrawerOpen: false,
+    rightDrawerOpen: false,
+    activeWidget: 'Table',
     selectedCaseJobsList: [],
     selectedJob: null,
     selectedJobCdrList: [],
@@ -206,176 +213,248 @@ class Reports extends React.Component {
             <IconButton
               onClick={() => this.setState({ leftDrawerOpen: !leftDrawerOpen })}
             >
-              {leftDrawerOpen ? <ChevronLeft /> : <ChevronRight />}
+              {leftDrawerOpen ? (
+                <ChevronLeft style={{ color: 'white' }} />
+              ) : (
+                <ChevronRight style={{ color: 'white' }} />
+              )}
             </IconButton>
           </div>
           {leftDrawerOpen ? (
-            <div style={{ margin: 0 }}>
+            <div style={{ padding: 16 }}>
               <ExpansionPanel className={classes.expansion}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography component='h5' variant='h5'>
+                  <Typography component='p' variant='p'>
                     <b>Add Jobs</b>
                   </Typography>
                 </ExpansionPanelSummary>
                 {
                   <div className={classes.drawercontent}>
-                    <TextField
-                      label='First Name'
-                      onChange={(event) =>
-                        this.setState({
-                          editableItem: {
-                            ...this.state.editableItem,
-                            name: event.target.value,
-                          },
-                        })
-                      }
-                    />
-
-                    <TextField
-                      style={{ marginTop: 16 }}
-                      label='Last Name'
-                      onChange={(event) =>
-                        this.setState({
-                          editableItem: {
-                            ...this.state.editableItem,
-                            username: event.target.value,
-                          },
-                        })
-                      }
-                    />
-                    <TextField
-                      style={{ marginTop: 16 }}
-                      label='Group'
-                      onChange={(event) =>
-                        this.setState({
-                          editableItem: {
-                            ...this.state.editableItem,
-                            username: event.target.value,
-                          },
-                        })
-                      }
-                    />
-                    <TextField
-                      style={{ marginTop: 16 }}
-                      label='Phone'
-                      onChange={(event) =>
-                        this.setState({
-                          editableItem: {
-                            ...this.state.editableItem,
-                            username: event.target.value,
-                          },
-                        })
-                      }
-                    />
-
-                    <FormControl style={{ marginTop: 18, minWidth: 180 }}>
-                      <InputLabel id='designation-label'>Role</InputLabel>
+                    <FormControl style={{ marginTop: 16, minWidth: 240 }}>
+                      <InputLabel id='category-label'>Category</InputLabel>
                       <Select
-                        labelId='designation-label'
+                        labelId='category-label'
+                        value={this.state.newJob.category}
                         onChange={(event) =>
                           this.setState({
-                            editableItem: {
-                              ...this.state.editableItem,
-                              designation: event.target.value,
+                            newJob: {
+                              ...this.state.newJob,
+                              category: event.target.value,
                             },
                           })
                         }
                       >
-                        <MenuItem value={'Supervisor'}>Supervisor</MenuItem>
-                        <MenuItem value={'Team Lead'}>Analyst</MenuItem>
-                        <MenuItem value={'Analyst'}>Analyst</MenuItem>
-                        <MenuItem value={'Field Agent'}>Analyst</MenuItem>
+                        <MenuItem value={'IMSI'}>IMSI</MenuItem>
+                        <MenuItem value={'IMEI'}>IMEI</MenuItem>
+                        <MenuItem value={'MSISDN'}>MSISDN</MenuItem>
+                        <MenuItem value={'Location'}>Location</MenuItem>
+                        <MenuItem value={'LAC/Cell-ID'}>LAC/Cell-ID</MenuItem>
                       </Select>
-                      <br />
-                      <FormLabel component='legend'>System Access</FormLabel>
-                      <RadioGroup
-                        aria-label='System Access'
-                        name='System Access'
-                        className={classes.group}
-                        row={true}
-                        onChange={this.handleChange}
-                        value={this.state.selected}
-                      >
-                        <FormControlLabel
-                          value='yes'
-                          control={<Radio />}
-                          label='Yes'
-                        />
-                        <FormControlLabel
-                          value='no'
-                          control={<Radio />}
-                          label='No'
-                        />
-                      </RadioGroup>
                     </FormControl>
+                    <br />
 
-                    {this.state.selected === 'yes' && (
-                      <div>
-                        <TextField
-                          label='Username'
-                          onChange={(event) =>
-                            this.setState({
-                              editableItem: {
-                                ...this.state.editableItem,
-                                name: event.target.value,
-                              },
-                            })
-                          }
-                        />
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                      <KeyboardDatePicker
+                        style={{ marginTop: 16 }}
+                        disableToolbar
+                        variant='inline'
+                        margin='normal'
+                        format='DD/MM/yyyy'
+                        openTo='year'
+                        label='Query Start Date'
+                        value={this.state.newJob.startTime}
+                        onChange={(newDate) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              startTime: newDate,
+                            },
+                          })
+                        }
+                      />
+                    </MuiPickersUtilsProvider>
+                    <br />
 
-                        <TextField
-                          style={{ marginTop: 16 }}
-                          label='Password'
-                          type='password'
-                          onChange={(event) =>
-                            this.setState({
-                              editableItem: {
-                                ...this.state.editableItem,
-                                password: event.target.value,
-                              },
-                            })
-                          }
-                        />
-                      </div>
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                      <KeyboardDatePicker
+                        style={{ marginTop: 16 }}
+                        disableToolbar
+                        variant='inline'
+                        margin='normal'
+                        openTo='year'
+                        format='DD/MM/yyyy'
+                        label='Query End Date'
+                        value={this.state.newJob.endTime}
+                        onChange={(newDate) =>
+                          this.setState({
+                            newJob: { ...this.state.newJob, endTime: newDate },
+                          })
+                        }
+                      />
+                    </MuiPickersUtilsProvider>
+                    <br />
+
+                    {this.state.newJob.category === 'Location' && (
+                      <TextField
+                        style={{ marginTop: 16 }}
+                        label='Query Location (Latitude)'
+                        style={{ minWidth: 500 }}
+                        type='number'
+                        value={
+                          this.state.newJob.latitude === -1
+                            ? ''
+                            : this.state.newJob.latitude
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              latitude: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
                     )}
                     <br />
-                    <TextField
-                      id='date'
-                      label='Start Date'
-                      type='date'
-                      defaultValue='2017-05-24'
-                      className={classes.textField}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                    />
-                    <br />
-                    <TextField
-                      id='date'
-                      label='End Date'
-                      type='date'
-                      defaultValue='2017-05-24'
-                      className={classes.textField}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                    />
+                    {this.state.newJob.category === 'Location' && (
+                      <TextField
+                        label='Query Location (Longitude)'
+                        type='number'
+                        style={{ minWidth: 500 }}
+                        value={
+                          this.state.newJob.longitude === -1
+                            ? ''
+                            : this.state.newJob.longitude
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              longitude: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
 
+                    {this.state.newJob.category === 'LAC/Cell-ID' && (
+                      <TextField
+                        style={{ marginTop: 16 }}
+                        label='Query LAC'
+                        type='number'
+                        style={{ minWidth: 500 }}
+                        value={
+                          this.state.newJob.lac === -1
+                            ? ''
+                            : this.state.newJob.lac
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              lac: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+
+                    {this.state.newJob.category === 'LAC/Cell-ID' && (
+                      <TextField
+                        label='Query Cell-ID'
+                        type='number'
+                        style={{ minWidth: 500 }}
+                        value={
+                          this.state.newJob.cellId === -1
+                            ? ''
+                            : this.state.newJob.cellId
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              cellId: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+
+                    {(this.state.newJob.category === 'Location' ||
+                      this.state.newJob.category === 'LAC/Cell-ID') && (
+                      <TextField
+                        style={{ marginTop: 16 }}
+                        label='Query Distance'
+                        style={{ minWidth: 500 }}
+                        type='number'
+                        value={
+                          this.state.newJob.distance === -1
+                            ? ''
+                            : this.state.newJob.distance
+                        }
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              distance: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+
+                    {(this.state.newJob.category === 'IMSI' ||
+                      this.state.newJob.category === 'IMEI' ||
+                      this.state.newJob.category === 'MSISDN') && (
+                      <TextField
+                        label='Query'
+                        style={{ minWidth: 240 }}
+                        value={this.state.newJob.query}
+                        onChange={(event) =>
+                          this.setState({
+                            newJob: {
+                              ...this.state.newJob,
+                              query: event.target.value,
+                            },
+                          })
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    )}
+                    <br />
                     <Button
                       variant='contained'
                       color='primary'
                       fullWidth
-                      style={{ marginLeft: -24 }}
-                      onClick={this.onCreateOrEditButtonPress}
+                      style={{ marginTop: 10, marginLeft: -12 }}
+                      startIcon={<Add />}
+                      onClick={this.onCreateJobButtonPress}
                     >
-                      {this.state.editMode ? 'Update' : 'Create'}
+                      Create
                     </Button>
                   </div>
                 }
               </ExpansionPanel>
               <ExpansionPanel className={classes.expansion}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography component='h5' variant='h5'>
+                  <Typography component='p' variant='p'>
                     <b>Jobs</b>
                   </Typography>
                 </ExpansionPanelSummary>
@@ -396,7 +475,9 @@ class Reports extends React.Component {
                 paddingBottom: window.innerHeight / 3.2,
               }}
             >
-              <span style={{ fontSize: 42, textAlign: 'center' }}>
+              <span
+                style={{ fontSize: 21, textAlign: 'center', color: 'white' }}
+              >
                 J<br />
                 O<br />
                 B<br />
@@ -512,7 +593,11 @@ class Reports extends React.Component {
                 this.setState({ rightDrawerOpen: !rightDrawerOpen })
               }
             >
-              {rightDrawerOpen ? <ChevronRight /> : <ChevronLeft />}
+              {rightDrawerOpen ? (
+                <ChevronRight style={{ color: 'white' }} />
+              ) : (
+                <ChevronLeft style={{ color: 'white' }} />
+              )}
             </IconButton>
           </div>
 
@@ -520,7 +605,7 @@ class Reports extends React.Component {
             <div style={{ padding: 16 }}>
               <ExpansionPanel>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography component='h5' variant='h5'>
+                  <Typography component='p' variant='p'>
                     <b>Query</b>
                   </Typography>
                 </ExpansionPanelSummary>
@@ -558,7 +643,7 @@ class Reports extends React.Component {
               </ExpansionPanel>
               <ExpansionPanel>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography component='h5' variant='h5'>
+                  <Typography component='p' variant='p'>
                     <b>Widgets</b>
                   </Typography>
                 </ExpansionPanelSummary>
@@ -581,7 +666,9 @@ class Reports extends React.Component {
                 paddingBottom: window.innerHeight / 5.8,
               }}
             >
-              <span style={{ fontSize: 42, textAlign: 'center' }}>
+              <span
+                style={{ fontSize: 21, textAlign: 'center', color: 'white' }}
+              >
                 W<br />
                 I<br />
                 D<br />

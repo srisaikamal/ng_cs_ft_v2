@@ -11,7 +11,13 @@ import {
   Typography,
   withStyles,
   Paper,
+  Dialog,
+  AppBar,
+  Toolbar,
+  DialogContent,
+  IconButton,
 } from '@material-ui/core';
+
 import {
   Add,
   AddBox,
@@ -32,6 +38,7 @@ import {
   ViewColumn,
 } from '@material-ui/icons';
 import axios from 'axios';
+import CloseIcon from '@material-ui/icons/Close';
 import { Autocomplete } from '@material-ui/lab';
 import MaterialTable from 'material-table';
 import React, { forwardRef } from 'react';
@@ -71,9 +78,11 @@ const styles = (theme) => ({
     flexShrink: 0,
   },
   drawerPaper: {
-    width: drawerWidth,
-    padding: theme.spacing(4),
-    backgroundColor: '#7395AE',
+    width: '40%',
+    align: 'center',
+  },
+  title: {
+    padding: 10,
   },
 });
 
@@ -99,7 +108,17 @@ class Departments extends React.Component {
     departmentHeadOptions: [],
     departmentZoneOptions: [],
   };
-
+  handleClose = () => {
+    this.setState({
+      drawerOpen: false,
+      editMode: false,
+      editableItem: {
+        name: '',
+        zone: '',
+        head: '',
+      },
+    });
+  };
   render() {
     const { classes } = this.props;
 
@@ -109,11 +128,16 @@ class Departments extends React.Component {
         <Grid container>
           <Grid
             item
-            md={1}
-            style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}
+            style={{
+              textAlign: 'center',
+              marginTop: window.innerHeight / 1500,
+              width: 45,
+              height: window.innerHeight,
+              backgroundColor: '#18202c',
+            }}
           >
             <span
-              style={{ fontSize: 42 }}
+              style={{ fontSize: 21, color: 'white' }}
               onClick={() =>
                 this.setState({
                   drawerOpen: true,
@@ -126,6 +150,13 @@ class Departments extends React.Component {
                 })
               }
             >
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
               C<br />
               R<br />
               E<br />
@@ -134,6 +165,7 @@ class Departments extends React.Component {
               E<br />
             </span>
           </Grid>
+          <Grid style={{ padding: 0, width: 36 }}></Grid>
           <Grid item md={11}>
             <MaterialTable
               icons={tableIcons}
@@ -239,7 +271,171 @@ class Departments extends React.Component {
     const { classes } = this.props;
 
     return (
-      <Drawer
+      <div>
+        <Dialog
+          aria-labelledby='customized-dialog-title'
+          open={this.state.drawerOpen}
+          onClose={this.handleClose}
+          //className={classes.drawer}
+          classes={{
+            paper: classes.drawerPaper,
+          }}
+        >
+          <AppBar position='static' style={{ backgroundColor: '#18202c' }}>
+            <Toolbar>
+              <Grid
+                justify='space-between' // Add it here :)
+                container
+                spacing={20}
+              >
+                <Grid item>
+                  <Typography
+                    variant='h6'
+                    color='inherit'
+                    className={classes.title}
+                  >
+                    {this.state.editMode ? 'Edit Department' : 'Add Department'}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    aria-label='close'
+                    className={classes.closeButton}
+                    onClick={this.handleClose}
+                    color='inherit'
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Toolbar>
+          </AppBar>
+
+          <DialogContent style={{ paddingLeft: 50 }}>
+            <TextField
+              label='Name'
+              fullWidth
+              value={this.state.editableItem.name}
+              onChange={(event) =>
+                this.setState({
+                  editableItem: {
+                    ...this.state.editableItem,
+                    name: event.target.value,
+                  },
+                })
+              }
+            />
+            <br />
+
+            <FormControl style={{ marginTop: 16, minWidth: 500 }}>
+              <InputLabel id='zone-label'>Department Zone</InputLabel>
+              <Select
+                labelId='zone-label'
+                value={this.state.editableItem.zone}
+                onChange={(event) =>
+                  this.setState({
+                    editableItem: {
+                      ...this.state.editableItem,
+                      zone: event.target.value,
+                    },
+                  })
+                }
+              >
+                {this.state.departmentZoneOptions.map((zone) => (
+                  <MenuItem key={zone} value={zone}>
+                    {zone}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <br />
+
+            <FormControl style={{ marginTop: 16, minWidth: 500 }}>
+              <InputLabel id='head-label'>Department Head</InputLabel>
+              <Select
+                labelId='head-label'
+                value={this.state.editableItem.head}
+                onChange={(event) =>
+                  this.setState({
+                    editableItem: {
+                      ...this.state.editableItem,
+                      head: event.target.value,
+                    },
+                  })
+                }
+              >
+                {this.state.departmentHeadOptions.map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <br />
+            <br />
+            <TextField
+              label='City'
+              fullWidth
+              value={this.state.editableItem.name}
+              onChange={(event) =>
+                this.setState({
+                  editableItem: {
+                    ...this.state.editableItem,
+                    name: event.target.value,
+                  },
+                })
+              }
+            />
+            <br />
+            <br />
+            <TextField
+              label='LGA'
+              fullWidth
+              value={this.state.editableItem.name}
+              onChange={(event) =>
+                this.setState({
+                  editableItem: {
+                    ...this.state.editableItem,
+                    name: event.target.value,
+                  },
+                })
+              }
+            />
+            <br />
+            <br />
+            <TextField
+              label='State'
+              fullWidth
+              value={this.state.editableItem.name}
+              onChange={(event) =>
+                this.setState({
+                  editableItem: {
+                    ...this.state.editableItem,
+                    name: event.target.value,
+                  },
+                })
+              }
+            />
+            <br />
+
+            <Button
+              variant='contained'
+              color='primary'
+              fullWidth
+              style={{
+                marginTop: 32,
+                marginLeft: -12,
+                backgroundColor: '#18202c',
+              }}
+              startIcon={this.state.editMode ? <Edit /> : <Add />}
+              onClick={this.onCreateOrEditButtonPress}
+            >
+              {this.state.editMode ? 'Edit' : 'Create'}
+            </Button>
+          </DialogContent>
+        </Dialog>
+      </div>
+      /* <Drawer
         className={classes.drawer}
         classes={{
           paper: classes.drawerPaper,
@@ -364,7 +560,7 @@ class Departments extends React.Component {
         >
           {this.state.editMode ? 'Edit' : 'Create'}
         </Button>
-      </Drawer>
+      </Drawer> */
     );
   }
 

@@ -13,6 +13,11 @@ import {
   TextField,
   Typography,
   withStyles,
+  Dialog,
+  AppBar,
+  Toolbar,
+  DialogContent,
+  IconButton,
 } from '@material-ui/core';
 import {
   Add,
@@ -35,6 +40,7 @@ import {
 } from '@material-ui/icons';
 import { Autocomplete } from '@material-ui/lab';
 import moment from 'moment';
+import CloseIcon from '@material-ui/icons/Close';
 import MaterialTable from 'material-table';
 import MomentUtils from '@date-io/moment';
 import {
@@ -79,9 +85,9 @@ const styles = (theme) => ({
     flexShrink: 0,
   },
   drawerPaper: {
-    width: drawerWidth,
-    padding: theme.spacing(4),
-    backgroundColor: '#7395AE',
+    width: '60%',
+
+    align: 'center',
   },
 });
 
@@ -100,6 +106,8 @@ class Jobs extends React.Component {
 
   state = {
     drawerOpen: false,
+    dialogOpen: false,
+    dialogOpen1: false,
     selectedCase: null,
     accountIdNameLookupMap: {},
     selectedCaseJobsList: [],
@@ -118,7 +126,11 @@ class Jobs extends React.Component {
       query: '',
     },
   };
-
+  handleClose1 = () => {
+    this.setState({
+      drawerOpen: false,
+    });
+  };
   render() {
     const { classes } = this.props;
 
@@ -130,20 +142,27 @@ class Jobs extends React.Component {
           <Grid container>
             <Grid
               item
-              md={1}
               style={{
                 textAlign: 'center',
-                marginTop: window.innerHeight / 5,
+                marginTop: window.innerHeight / 1500,
+                width: 45,
+                height: window.innerHeight,
+                backgroundColor: '#18202c',
               }}
+              onClick={() =>
+                this.setState({
+                  drawerOpen: true,
+                })
+              }
             >
-              <span
-                style={{ fontSize: 42 }}
-                onClick={() =>
-                  this.setState({
-                    drawerOpen: true,
-                  })
-                }
-              >
+              <span style={{ fontSize: 21, color: 'white' }}>
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
                 C<br />
                 R<br />
                 E<br />
@@ -152,7 +171,7 @@ class Jobs extends React.Component {
                 E<br />
               </span>
             </Grid>
-
+            <Grid style={{ padding: 0, width: 36 }}></Grid>
             <Grid item md={11}>
               {this.getJobsTableComponent()}
             </Grid>
@@ -168,7 +187,250 @@ class Jobs extends React.Component {
     const { classes } = this.props;
 
     return (
-      <Drawer
+      <Dialog
+        aria-labelledby='customized-dialog-title'
+        open={this.state.drawerOpen}
+        onClose={this.handleClose1}
+        //className={classes.drawer}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+      >
+        <AppBar position='static' style={{ backgroundColor: '#557A95' }}>
+          <Toolbar>
+            <Grid
+              justify='space-between' // Add it here :)
+              container
+              spacing={20}
+            >
+              <Grid item>
+                <Typography
+                  component='h5'
+                  variant='h5'
+                  style={{ marginBottom: 24 }}
+                >
+                  Create Job
+                </Typography>
+              </Grid>
+              <Grid item>
+                <IconButton
+                  aria-label='close'
+                  className={classes.closeButton}
+                  onClick={this.handleClose1}
+                  color='inherit'
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </Toolbar>
+        </AppBar>
+
+        <DialogContent style={{ paddingLeft: 50 }}>
+          <FormControl style={{ marginTop: 16, minWidth: 500 }}>
+            <InputLabel id='category-label'>Category</InputLabel>
+            <Select
+              labelId='category-label'
+              value={this.state.newJob.category}
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    category: event.target.value,
+                  },
+                })
+              }
+            >
+              <MenuItem value={'IMSI'}>IMSI</MenuItem>
+              <MenuItem value={'IMEI'}>IMEI</MenuItem>
+              <MenuItem value={'MSISDN'}>MSISDN</MenuItem>
+              <MenuItem value={'Location'}>Location</MenuItem>
+              <MenuItem value={'LAC/Cell-ID'}>LAC/Cell-ID</MenuItem>
+            </Select>
+          </FormControl>
+          <br />
+
+          <MuiPickersUtilsProvider utils={MomentUtils}>
+            <KeyboardDatePicker
+              style={{ marginTop: 16, minWidth: 500 }}
+              disableToolbar
+              variant='inline'
+              margin='normal'
+              format='DD/MM/yyyy'
+              openTo='year'
+              label='Query Start Date'
+              value={this.state.newJob.startTime}
+              onChange={(newDate) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, startTime: newDate },
+                })
+              }
+            />
+          </MuiPickersUtilsProvider>
+          <br />
+
+          <MuiPickersUtilsProvider utils={MomentUtils}>
+            <KeyboardDatePicker
+              style={{ marginTop: 16, minWidth: 500 }}
+              disableToolbar
+              variant='inline'
+              margin='normal'
+              openTo='year'
+              format='DD/MM/yyyy'
+              label='Query End Date'
+              value={this.state.newJob.endTime}
+              onChange={(newDate) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, endTime: newDate },
+                })
+              }
+            />
+          </MuiPickersUtilsProvider>
+          <br />
+
+          {this.state.newJob.category === 'Location' && (
+            <TextField
+              style={{ marginTop: 16 }}
+              label='Query Location (Latitude)'
+              style={{ minWidth: 500 }}
+              type='number'
+              value={
+                this.state.newJob.latitude === -1
+                  ? ''
+                  : this.state.newJob.latitude
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    latitude: event.target.value,
+                  },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+          <br />
+          {this.state.newJob.category === 'Location' && (
+            <TextField
+              label='Query Location (Longitude)'
+              type='number'
+              style={{ minWidth: 500 }}
+              value={
+                this.state.newJob.longitude === -1
+                  ? ''
+                  : this.state.newJob.longitude
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    longitude: event.target.value,
+                  },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {this.state.newJob.category === 'LAC/Cell-ID' && (
+            <TextField
+              style={{ marginTop: 16 }}
+              label='Query LAC'
+              type='number'
+              style={{ minWidth: 500 }}
+              value={this.state.newJob.lac === -1 ? '' : this.state.newJob.lac}
+              onChange={(event) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, lac: event.target.value },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {this.state.newJob.category === 'LAC/Cell-ID' && (
+            <TextField
+              label='Query Cell-ID'
+              type='number'
+              style={{ minWidth: 500 }}
+              value={
+                this.state.newJob.cellId === -1 ? '' : this.state.newJob.cellId
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, cellId: event.target.value },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {(this.state.newJob.category === 'Location' ||
+            this.state.newJob.category === 'LAC/Cell-ID') && (
+            <TextField
+              style={{ marginTop: 16 }}
+              label='Query Distance'
+              style={{ minWidth: 500 }}
+              type='number'
+              value={
+                this.state.newJob.distance === -1
+                  ? ''
+                  : this.state.newJob.distance
+              }
+              onChange={(event) =>
+                this.setState({
+                  newJob: {
+                    ...this.state.newJob,
+                    distance: event.target.value,
+                  },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+
+          {(this.state.newJob.category === 'IMSI' ||
+            this.state.newJob.category === 'IMEI' ||
+            this.state.newJob.category === 'MSISDN') && (
+            <TextField
+              label='Query'
+              style={{ minWidth: 500 }}
+              value={this.state.newJob.query}
+              onChange={(event) =>
+                this.setState({
+                  newJob: { ...this.state.newJob, query: event.target.value },
+                })
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          )}
+          <br />
+          <Button
+            variant='contained'
+            color='primary'
+            fullWidth
+            style={{ marginTop: 10 }}
+            startIcon={<Add />}
+            onClick={this.onCreateJobButtonPress}
+          >
+            Create
+          </Button>
+        </DialogContent>
+      </Dialog>
+      /*<Drawer
         anchor={this.state.drawerPosition}
         className={classes.drawer}
         classes={{
@@ -364,7 +626,7 @@ class Jobs extends React.Component {
         >
           Create
         </Button>
-      </Drawer>
+      </Drawer>*/
     );
   }
 

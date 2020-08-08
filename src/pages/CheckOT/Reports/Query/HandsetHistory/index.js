@@ -11,18 +11,6 @@ class HandsetHistory extends React.PureComponent {
 
     return (
       <div>
-        <TextField
-          fullWidth
-          label='Enter MSISDN'
-          defaultValue='9867543287'
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position='start'>
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
         <br />
       </div>
     );

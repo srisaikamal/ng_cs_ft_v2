@@ -12,6 +12,13 @@ import {
   Typography,
   withStyles,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  AppBar,
+  DialogContent,
+  Toolbar,
+  IconButton,
   RadioGroup,
   Radio,
   FormControlLabel,
@@ -43,6 +50,7 @@ import {
 import { Autocomplete } from '@material-ui/lab';
 import MaterialTable from 'material-table';
 import React, { forwardRef } from 'react';
+import CloseIcon from '@material-ui/icons/Close';
 // Local
 import { drawerWidth, apiHost } from '../../../config';
 
@@ -79,12 +87,11 @@ const styles = (theme) => ({
     flexShrink: 0,
   },
   drawerPaper: {
-    width: drawerWidth,
-    padding: theme.spacing(5),
-    backgroundColor: '#7395AE',
+    width: '40%',
+    align: 'center',
   },
-  drawercontent: {
-    marginTop: -32,
+  title: {
+    padding: 10,
   },
 });
 
@@ -103,6 +110,7 @@ class Users extends React.Component {
   state = {
     drawerOpen: false,
     editMode: false,
+    open: false,
     error: null,
     loading: false,
     designationOptions: [],
@@ -124,6 +132,9 @@ class Users extends React.Component {
     this.setState({ selected: ev.target.value });
     console.log(ev.target.value);
   };
+  handleClose = () => {
+    this.setState({ open: false });
+  };
   render() {
     const { classes } = this.props;
     const { selected } = this.state;
@@ -133,27 +144,37 @@ class Users extends React.Component {
         <Grid container>
           <Grid
             item
-            md={1}
-            style={{ textAlign: 'center', marginTop: window.innerHeight / 5 }}
+            style={{
+              textAlign: 'center',
+              marginTop: window.innerHeight / 1500,
+              width: 45,
+              height: window.innerHeight,
+              backgroundColor: '#18202c',
+            }}
+            onClick={() =>
+              this.setState({
+                editableItem: {
+                  name: '',
+                  username: '',
+                  password: '',
+                  disabled: false,
+                  designation: '',
+                  cases: [],
+                  department: '',
+                },
+                drawerOpen: true,
+                editMode: false,
+              })
+            }
           >
-            <span
-              style={{ fontSize: 42 }}
-              onClick={() =>
-                this.setState({
-                  editableItem: {
-                    name: '',
-                    username: '',
-                    password: '',
-                    disabled: false,
-                    designation: '',
-                    cases: [],
-                    department: '',
-                  },
-                  drawerOpen: true,
-                  editMode: false,
-                })
-              }
-            >
+            <span style={{ fontSize: 21, color: 'white' }}>
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
               C<br />
               R<br />
               E<br />
@@ -162,6 +183,7 @@ class Users extends React.Component {
               E<br />
             </span>
           </Grid>
+          <Grid style={{ padding: 0, width: 36 }}></Grid>
           <Grid item md={11}>
             <MaterialTable
               icons={tableIcons}
@@ -286,7 +308,229 @@ class Users extends React.Component {
     const { classes } = this.props;
 
     return (
-      <Drawer
+      <div>
+        <Dialog
+          onClose={this.handleClose}
+          aria-labelledby='customized-dialog-title'
+          open={this.state.drawerOpen}
+          //className={classes.drawer}
+          classes={{
+            paper: classes.drawerPaper,
+          }}
+        >
+          <AppBar position='static' style={{ backgroundColor: '#18202c' }}>
+            <Toolbar>
+              <Grid
+                justify='space-between' // Add it here :)
+                container
+                spacing={20}
+              >
+                <Grid item>
+                  <Typography
+                    variant='h6'
+                    color='inherit'
+                    className={classes.title}
+                  >
+                    {this.state.editMode ? 'Edit User' : 'Add User'}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    aria-label='close'
+                    className={classes.closeButton}
+                    onClick={this.resetToDefault}
+                    color='inherit'
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Toolbar>
+          </AppBar>
+
+          <DialogContent style={{ paddingLeft: 50 }}>
+            <div className={classes.drawercontent}>
+              <TextField
+                label='First Name'
+                fullWidth
+                value={this.state.editableItem.name}
+                onChange={(event) =>
+                  this.setState({
+                    editableItem: {
+                      ...this.state.editableItem,
+                      name: event.target.value,
+                    },
+                  })
+                }
+              />
+              <br />
+
+              <TextField
+                style={{ marginTop: 16 }}
+                label='Last Name'
+                fullWidth
+                value={this.state.editableItem.username}
+                onChange={(event) =>
+                  this.setState({
+                    editableItem: {
+                      ...this.state.editableItem,
+                      username: event.target.value,
+                    },
+                  })
+                }
+              />
+              <br />
+              <TextField
+                style={{ marginTop: 16 }}
+                label='Group'
+                fullWidth
+                value={this.state.editableItem.username}
+                onChange={(event) =>
+                  this.setState({
+                    editableItem: {
+                      ...this.state.editableItem,
+                      username: event.target.value,
+                    },
+                  })
+                }
+              />
+              <br />
+              <TextField
+                style={{ marginTop: 16 }}
+                label='Phone'
+                fullWidth
+                value={this.state.editableItem.username}
+                onChange={(event) =>
+                  this.setState({
+                    editableItem: {
+                      ...this.state.editableItem,
+                      username: event.target.value,
+                    },
+                  })
+                }
+              />
+              <br />
+
+              <FormControl style={{ marginTop: 18, minWidth: 500 }}>
+                <InputLabel id='designation-label'>Role</InputLabel>
+                <Select
+                  labelId='designation-label'
+                  autoWidth='true'
+                  value={this.state.editableItem.designation}
+                  onChange={(event) =>
+                    this.setState({
+                      editableItem: {
+                        ...this.state.editableItem,
+                        designation: event.target.value,
+                      },
+                    })
+                  }
+                >
+                  <MenuItem value={'Supervisor'}>Supervisor</MenuItem>
+                  <MenuItem value={'Team Lead'}>Analyst</MenuItem>
+                  <MenuItem value={'Analyst'}>Analyst</MenuItem>
+                  <MenuItem value={'Field Agent'}>Analyst</MenuItem>
+                </Select>
+                <br />
+                <FormLabel component='legend'>System Access</FormLabel>
+                <RadioGroup
+                  aria-label='System Access'
+                  fullWidth
+                  name='System Access'
+                  className={classes.group}
+                  row={true}
+                  onChange={this.handleChange}
+                  value={this.state.selected}
+                >
+                  <FormControlLabel
+                    value='yes'
+                    control={<Radio />}
+                    label='Yes'
+                  />
+                  <FormControlLabel value='no' control={<Radio />} label='No' />
+                </RadioGroup>
+              </FormControl>
+              <br />
+
+              {this.state.selected === 'yes' && (
+                <div>
+                  <TextField
+                    label='Username'
+                    fullWidth
+                    value={this.state.editableItem.name}
+                    onChange={(event) =>
+                      this.setState({
+                        editableItem: {
+                          ...this.state.editableItem,
+                          name: event.target.value,
+                        },
+                      })
+                    }
+                  />
+                  <br />
+
+                  <TextField
+                    style={{ marginTop: 16 }}
+                    label='Password'
+                    type='password'
+                    fullWidth
+                    value={this.state.editableItem.password}
+                    onChange={(event) =>
+                      this.setState({
+                        editableItem: {
+                          ...this.state.editableItem,
+                          password: event.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              )}
+              <br />
+              <TextField
+                id='date'
+                label='Start Date'
+                type='date'
+                fullWidth
+                defaultValue='2017-05-24'
+                className={classes.textField}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              <br />
+              <br />
+              <TextField
+                id='date'
+                label='End Date'
+                type='date'
+                fullWidth
+                defaultValue='2017-05-24'
+                className={classes.textField}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+
+              <Button
+                variant='contained'
+                color='primary'
+                fullWidth
+                style={{
+                  marginTop: 32,
+                  marginLeft: -12,
+                  backgroundColor: '#18202c',
+                }}
+                startIcon={this.state.editMode ? <Edit /> : <Add />}
+                onClick={this.onCreateOrEditButtonPress}
+              >
+                {this.state.editMode ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+      /* <Drawer
         className={classes.drawer}
         classes={{
           paper: classes.drawerPaper,
@@ -297,7 +541,7 @@ class Users extends React.Component {
         <Typography component='h5' variant='h5' style={{ marginBottom: 24 }}>
           {this.state.editMode ? 'Edit User' : 'Add User'}
         </Typography>
-        <div className={classes.drawercontent}>
+        <div className={classes.drawercontent} style={{ overflowY: 'auto' }}>
           <TextField
             label='First Name'
             value={this.state.editableItem.name}
@@ -450,7 +694,7 @@ class Users extends React.Component {
             {this.state.editMode ? 'Update' : 'Create'}
           </Button>
         </div>
-      </Drawer>
+          </Drawer>*/
     );
   }
 
@@ -458,6 +702,7 @@ class Users extends React.Component {
     this.setState({
       drawerOpen: false,
       editMode: false,
+      open: false,
       editableItem: {
         name: '',
         username: '',

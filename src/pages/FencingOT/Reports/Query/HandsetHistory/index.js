@@ -34,7 +34,7 @@ class HandsetHistory extends React.PureComponent {
 
     return (
       <div>
-        <TextField
+        {/*  <TextField
           fullWidth
           label='Enter MSISDN'
           defaultValue='9867543287'
@@ -46,7 +46,7 @@ class HandsetHistory extends React.PureComponent {
             ),
           }}
         />
-        <br />
+        */}
         <Paper className={classes.root}>
           <Table className={classes.table}>
             <TableHead>

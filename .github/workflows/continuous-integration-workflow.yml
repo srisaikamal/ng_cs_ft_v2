@@ -21,7 +21,7 @@ jobs:
             git pull
             yarn build
             yarn run prod
-      name: Exit console
-      if: success()
-      run: |
-        exit 1
+      - name: Exit console
+        if: success()
+        run: |
+          exit 1

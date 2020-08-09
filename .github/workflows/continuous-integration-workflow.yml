@@ -21,4 +21,5 @@ jobs:
             git pull
             yarn build
             nohup serve -s build -l 9000 &
-            echo -ne '\n'
+            exit
+            

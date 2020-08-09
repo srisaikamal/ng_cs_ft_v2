@@ -17,7 +17,7 @@ jobs:
           key: ${{ secrets.KEY }}
           script_stop: true
           script: |
-            killall node || echo "No node processes running"
+            if pgrep node; then pkill node; fi
             cd ~/ng_cs_ft_v2
             git pull
             yarn build

@@ -20,6 +20,4 @@ jobs:
             cd ~/ng_cs_ft_v2
             git pull
             yarn build
-            nohup serve -s build -l 9000 &
             exit
-            

@@ -25,5 +25,5 @@ jobs:
             nohup serve -s build -l 9000 & > /dev/null
       
       - name: Disconnect tty
-        if: success():
+        if: success()
         run: exit 0

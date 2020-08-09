@@ -105,13 +105,13 @@ class DataTable extends React.PureComponent {
     if (selectedJob['category'] === 'Location') {
       let valuesArr = selectedJob['query'].split(',');
       let tempString = `Lat: ${valuesArr[0]}, Long: ${valuesArr[1]}, Dist: ${valuesArr[2]}`;
-      title += tempString;
+      //title += tempString;
     } else if (selectedJob['category'] === 'LAC/Cell-ID') {
       let valuesArr = selectedJob['query'].split(',');
       let tempString = `LAC: ${valuesArr[0]}, Cell-ID: ${valuesArr[1]}, Dist: ${valuesArr[2]}`;
-      title += tempString;
+      //title += tempString;
     } else {
-      title += selectedJob['query'];
+      //title += selectedJob['query'];
     }
 
     return (
@@ -126,13 +126,13 @@ class DataTable extends React.PureComponent {
             exportButton: true,
             paging: true,
             filtering: true,
-            search: true,
+            search: false,
           }}
           columns={convertObjectKeyToTableColumnObject(
             selectedColumns,
             selectedJobCdrList
           )}
-          title='Table Data'
+          title={title}
           data={selectedJobCdrList}
         />
       </div>

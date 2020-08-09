@@ -7,24 +7,24 @@ import {
   Card,
   CardContent,
   IconButton,
+  Typography,
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  Typography,
   TextField,
-  InputLabel,
   Select,
+  InputLabel,
+  FormControl,
   MenuItem,
-  FormLabel,
   RadioGroup,
   Radio,
-  Button,
-  FormControl,
   FormControlLabel,
+  Button,
+  FormLabel,
 } from '@material-ui/core';
 import {
-  Add,
   TableChart,
+  Add,
   Timeline,
   People,
   AddBox,
@@ -45,13 +45,13 @@ import {
   Delete,
   Map,
 } from '@material-ui/icons';
+import React, { forwardRef } from 'react';
+import MaterialTable from 'material-table';
 import MomentUtils from '@date-io/moment';
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
-import React, { forwardRef } from 'react';
-import MaterialTable from 'material-table';
 import axios from 'axios';
 import moment from 'moment';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -96,18 +96,21 @@ const styles = (theme) => ({
   chip: {
     margin: theme.spacing(0.5),
   },
-  leftdrawer: { height: window.innerHeight, backgroundColor: '#18202c' },
-  rightdrawer: { height: window.innerHeight, backgroundColor: '#18202c' },
+  leftdrawer: {
+    height: window.innerHeight,
+    backgroundColor: '#18202c',
+  },
+  rightdrawer: {
+    height: window.innerHeight,
+    backgroundColor: '#18202c',
+  },
   widgetListItem: {
     marginRight: 24,
   },
   drawercontent: {
-    marginTop: -32,
+    marginTop: -18,
     marginLeft: 40,
     padding: 18,
-  },
-  main: {
-    height: window.innerHeight,
   },
 });
 
@@ -120,11 +123,13 @@ class Reports extends React.Component {
     this.getJobsTableComponent = this.getJobsTableComponent.bind(this);
     this.getWidgetsListComponent = this.getWidgetsListComponent.bind(this);
     this.onDeleteButtonPress = this.onDeleteButtonPress.bind(this);
+    this.getDefaultCase = this.getDefaultCase.bind(this);
     this.fetchJobsForCase = this.fetchJobsForCase.bind(this);
     this.fetchCdrForJob = this.fetchCdrForJob.bind(this);
   }
 
   state = {
+    expanded: true,
     leftDrawerOpen: false,
     rightDrawerOpen: false,
     activeWidget: 'Table',
@@ -144,21 +149,28 @@ class Reports extends React.Component {
       startTime: new Date(),
       endTime: new Date(),
       query: '',
-      selected: 'no',
     },
     dataTableSelectedColumns: ['id', 'callingnumber', 'callednumber'],
     allCdrColumns: [],
   };
-  handleChange = (ev) => {
-    this.setState({ selected: ev.target.value });
-    console.log(ev.target.value);
+  handleChange = (panel) => (event, expanded) => {
+    this.setState({
+      expanded: expanded ? panel : false,
+    });
   };
   render() {
     const { classes } = this.props;
-
+    const { expanded } = this.state;
     let leftDrawerSize = this.state.leftDrawerOpen ? 3 : 1;
     let rightDrawerSize = this.state.rightDrawerOpen ? 3 : 1;
     let mainContentSize = 12 - (leftDrawerSize + rightDrawerSize);
+
+    let height = window.innerHeight;
+    if (mainContentSize === 6) {
+      height = window.innerHeight / 1.5;
+    } else if (mainContentSize === 8) {
+      height = window.innerHeight / 1.3;
+    }
 
     return (
       <div>
@@ -166,13 +178,8 @@ class Reports extends React.Component {
           <Grid item md={leftDrawerSize}>
             {this.getLeftDrawer()}
           </Grid>
-          <Grid
-            className={classes.main}
-            item
-            md={mainContentSize}
-            style={{ padding: 16 }}
-          >
-            {this.state.selectedJob && this.getMainContent()}
+          <Grid item md={mainContentSize} style={{ padding: 16 }}>
+            {this.state.selectedJob && this.getMainContent(height)}
           </Grid>
           <Grid item md={rightDrawerSize}>
             {this.getRightDrawer()}
@@ -182,14 +189,30 @@ class Reports extends React.Component {
     );
   }
 
-  getMainContent() {
+  getMainContent(height) {
     switch (this.state.activeWidget) {
       case 'Handset':
-        return <HandsetHistoryContent />;
+        return (
+          <HandsetHistoryContent
+            selectedJob={this.state.selectedJob}
+            selectedJobCdrList={this.state.selectedJobCdrList}
+          />
+        );
       case 'Map':
-        return <DataMapContent />;
+        return (
+          <DataMapContent
+            selectedJob={this.state.selectedJob}
+            selectedJobCdrList={this.state.selectedJobCdrList}
+          />
+        );
       case 'Linktree':
-        return <LinkTreeContent />;
+        return (
+          <LinkTreeContent
+            height={height}
+            selectedJob={this.state.selectedJob}
+            selectedJobCdrList={this.state.selectedJobCdrList}
+          />
+        );
       default:
         return (
           <DataTableContent
@@ -221,8 +244,13 @@ class Reports extends React.Component {
             </IconButton>
           </div>
           {leftDrawerOpen ? (
-            <div style={{ padding: 16 }}>
-              <ExpansionPanel className={classes.expansion}>
+            <div style={{ padding: 8, height: 'window.innerHeight' }}>
+              <ExpansionPanel
+                expanded={this.state.expanded === 'panel1'}
+                onChange={this.handleChange('panel1')}
+                className={classes.expansion}
+                defaultExpanded='true'
+              >
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography component='p' variant='p'>
                     <b>Add Jobs</b>
@@ -452,7 +480,13 @@ class Reports extends React.Component {
                   </div>
                 }
               </ExpansionPanel>
-              <ExpansionPanel className={classes.expansion}>
+
+              <ExpansionPanel
+                className={classes.expansion}
+                defaultexpanded={this.state.expanded === 'panel2'}
+                onChange={this.handleChange('panel2')}
+                ltExpanded
+              >
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography component='p' variant='p'>
                     <b>Jobs</b>
@@ -489,15 +523,13 @@ class Reports extends React.Component {
       </div>
     );
   }
-
   getJobsTableComponent() {
     const { classes } = this.props;
 
     return (
       <MaterialTable
-        //className={classes.mattab}
         icons={tableIcons}
-        style={{ marginTop: 32, marginRight: 16 }}
+        style={{ marginTop: 16, marginRight: 16 }}
         components={{
           Container: (props) => <Paper {...props} elevation={0} />,
         }}
@@ -602,8 +634,11 @@ class Reports extends React.Component {
           </div>
 
           {rightDrawerOpen ? (
-            <div style={{ padding: 16 }}>
-              <ExpansionPanel>
+            <div style={{ padding: 16, marginTop: -12 }}>
+              <ExpansionPanel
+                expanded={this.state.expanded === 'panel3'}
+                onChange={this.handleChange('panel3')}
+              >
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography component='p' variant='p'>
                     <b>Query</b>
@@ -641,7 +676,10 @@ class Reports extends React.Component {
                   )}
                 </ExpansionPanelDetails>
               </ExpansionPanel>
-              <ExpansionPanel>
+              <ExpansionPanel
+                expanded={this.state.expanded === 'panel4'}
+                onChange={this.handleChange('panel4')}
+              >
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography component='p' variant='p'>
                     <b>Widgets</b>
@@ -732,8 +770,8 @@ class Reports extends React.Component {
     const { selectedCase } = this.props;
 
     await this.getAllCdrColumns();
-    await this.fetchJobsForCase(selectedCase);
-    await this.fetchCdrForJob(this.state.selectedJob);
+    await this.getDefaultCase();
+    //await this.fetchCdrForJob(this.state.selectedJob);
   }
 
   async getAllCdrColumns() {
@@ -747,8 +785,28 @@ class Reports extends React.Component {
     }
   }
 
+  async getDefaultCase() {
+    try {
+      const apiEndpoint = apiHost + '/cases/';
+      let response = await axios.get(apiEndpoint);
+      response = response.data;
+      response.every(async (caseItem, index) => {
+        let caseName = caseItem['name'];
+        if (caseName === 'DEFAULT_CASE_CHECK_OT') {
+          this.setState({ selectedCase: caseItem });
+          await this.fetchJobsForCase(caseItem);
+          return false;
+        }
+        return true;
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async fetchJobsForCase(selectedCase) {
     try {
+      this.setState({ selectedCase: selectedCase });
       const apiEndpoint = apiHost + '/jobs/?case=' + selectedCase.id;
       let response = await axios.get(apiEndpoint);
       response = response.data;
@@ -759,6 +817,7 @@ class Reports extends React.Component {
         selectedCaseJobsList: response,
         selectedJob: response[0],
       });
+      await this.fetchCdrForJob(response[0]);
     } catch (error) {
       console.log(error);
     }
@@ -770,7 +829,7 @@ class Reports extends React.Component {
       let response = await axios.delete(apiEndpoint);
       response = response.data;
       this.resetToDefault();
-      this.fetchJobsForCase(this.props.selectedCase);
+      this.fetchJobsForCase(this.state.selectedCase);
     } catch (error) {
       console.log(error);
     }

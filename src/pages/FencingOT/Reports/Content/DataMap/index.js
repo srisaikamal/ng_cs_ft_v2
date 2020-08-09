@@ -21,9 +21,12 @@ class DataMap extends React.Component {
   constructor(props) {
     super(props);
     this.getMarker = this.getMarker.bind(this);
+    this.getMarkerFromCdr = this.getMarkerFromCdr.bind(this);
   }
 
   render() {
+    const { selectedJob, selectedJobCdrList } = this.props;
+
     return (
       <div style={{ height: '100%', width: '100%' }}>
         <Typography variant='h5' component='h5'>
@@ -39,12 +42,7 @@ class DataMap extends React.Component {
           }}
           defaultZoom={15}
         >
-          {this.getMarker(59.955413, 30.337844, 'My Marker')}
-          {this.getMarker(59.11, 30.337844, 'My Marker')}
-          {this.getMarker(59.12, 30.337844, 'My Marker')}
-          {this.getMarker(59.13, 30.337844, 'My Marker')}
-          {this.getMarker(59.14, 30.337844, 'My Marker')}
-          {this.getMarker(59.15, 30.337844, 'My Marker')}
+          {selectedJobCdrList.map((cdr) => this.getMarkerFromCdr(cdr))}
         </GoogleMapReact>
       </div>
     );
@@ -65,6 +63,44 @@ class DataMap extends React.Component {
             <b>IMEI: </b>8976573429
             <br />
             <b>MSISDN: </b>8067655543
+            <br />
+          </React.Fragment>
+        }
+      >
+        <IconButton>
+          <Room color='error' fontSize='large' />
+        </IconButton>
+      </HtmlTooltip>
+    );
+  }
+
+  getMarkerFromCdr(cdr) {
+    let latitude = cdr['locationlat'];
+    let longitude = cdr['locationlon'];
+    let geohash = cdr['geohash'];
+    let timestamp = cdr['timestamp'];
+    let imsi = cdr['servedimsi'];
+    let imei = cdr['servedimei'];
+    let msisdn = cdr['msisdn'];
+
+    return (
+      <HtmlTooltip
+        lat={latitude}
+        lng={longitude}
+        text={imsi}
+        title={
+          <React.Fragment>
+            <Typography color='inherit'>Geohash: {geohash}</Typography>
+            <b>Timestamp: </b>
+            {timestamp} <br />
+            <b>IMSI: </b>
+            {imsi}
+            <br />
+            <b>IMEI: </b>
+            {imei}
+            <br />
+            <b>MSISDN: </b>
+            {msisdn}
             <br />
           </React.Fragment>
         }

@@ -21,6 +21,5 @@ jobs:
             cd ~/ng_cs_ft_v2
             git pull
             yarn build
-            serve -s build -l 9000
+            nohup serve -s build -l 9000 &
             echo -en "\n\nRunning serve in background"
-            

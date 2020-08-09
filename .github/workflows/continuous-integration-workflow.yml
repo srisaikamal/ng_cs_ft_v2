@@ -15,13 +15,12 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
+          script_stop: true
           script: |
             killall node
             cd ~/ng_cs_ft_v2
             git pull
             yarn build
-            yarn run prod
-      - name: Exit console
-        if: success()
-        run: |
-          exit 1
+            serve -s build -l 9000
+            echo -en "\n\nRunning serve in background"
+            

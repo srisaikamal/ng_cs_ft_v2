@@ -37,8 +37,8 @@ class DataMap extends React.Component {
           bootstrapURLKeys={{ key: googleMapsApiKey }}
           yesIWantToUseGoogleMapApiInternals
           defaultCenter={{
-            lat: 59.95,
-            lng: 30.33,
+            lat: 6.465422,
+            lng: 3.406448,
           }}
           defaultZoom={15}
         >

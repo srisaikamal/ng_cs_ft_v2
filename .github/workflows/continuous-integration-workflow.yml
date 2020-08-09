@@ -6,10 +6,11 @@ on:
 
 jobs:
   build:
+      id: build
       name: Build
       runs-on: ubuntu-latest
       steps:
-      - name: executing remote ssh commands using key
+      - name: Executing remote ssh commands using key
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -21,4 +22,8 @@ jobs:
             cd ~/ng_cs_ft_v2
             git pull
             yarn build
-            serve -s build -l 9000
+            nohup serve -s build -l 9000 & > /dev/null
+      
+      - name: Disconnect tty
+        if: success():
+        run: exit 0

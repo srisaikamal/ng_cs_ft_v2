@@ -20,4 +20,4 @@ jobs:
             cd ~/ng_cs_ft_v2
             git pull
             yarn build
-            exit
+            yarn run prod
